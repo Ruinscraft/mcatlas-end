@@ -2,12 +2,7 @@ package net.mcatlas.end;
 
 import org.bukkit.Bukkit;
 
-import java.util.Calendar;
-import java.util.Random;
-
 public class EndWorldCheckerTask implements Runnable {
-
-    private static Random random = new Random();
 
     private static final long DAY_LENGTH = 86400000;
     private static final long TWELVE_HOURS_LENGTH = 43200000;
@@ -32,7 +27,7 @@ public class EndWorldCheckerTask implements Runnable {
     }
 
     public static long newCreationTime() {
-        return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * random.nextDouble()));
+        return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
     }
 
 }

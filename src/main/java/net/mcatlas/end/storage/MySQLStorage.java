@@ -11,7 +11,7 @@ public class MySQLStorage implements SQLStorage {
     private HikariDataSource dataSource;
 
     // PLAYER (world_name, uuid, last_online)
-    // WORLD (world_name, various stats that royal wants i don't know)
+    // WORLD (world_name, world creation time, world deletion time, stats??)
     private String create_players_table;
     private String create_worlds_table;
 
