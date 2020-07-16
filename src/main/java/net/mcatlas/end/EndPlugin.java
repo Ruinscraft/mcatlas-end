@@ -1,5 +1,6 @@
 package net.mcatlas.end;
 
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.management.ManagementFactory;
@@ -20,6 +21,11 @@ public class EndPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    public static World createWorld() {
+        
+        return null;
     }
 
 }
