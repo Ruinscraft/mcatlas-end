@@ -36,6 +36,8 @@ public class EndPlugin extends JavaPlugin {
         this.endWorlds = this.getCurrentEndWorlds();
 
         Bukkit.getScheduler().runTaskTimer(this, new EndWorldCheckerTask(), 20 * 10, 60 * 20);
+
+        // check end portal table and create portal
     }
 
     @Override
@@ -58,7 +60,7 @@ public class EndPlugin extends JavaPlugin {
         int newWidth = ((int) (maxWidth * random.nextDouble())) + (maxWidth / 2);
         int newHeight = ((int) (maxHeight * random.nextDouble())) + (maxWidth / 2);
 
-        Location portalLocation = new Location(Bukkit.getWorlds().get(0), newWidth, 64, newHeight));
+        Location portalLocation = new Location(Bukkit.getWorlds().get(0), newWidth, 64, newHeight);
         String townName = TownyAPI.getInstance().getTownName(portalLocation);
         if (townName == null || townName.equals("")) {
             return findNewPortalLocation();
