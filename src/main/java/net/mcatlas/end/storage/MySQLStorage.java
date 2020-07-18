@@ -2,15 +2,19 @@ package net.mcatlas.end.storage;
 
 import com.zaxxer.hikari.HikariDataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class MySQLStorage implements SQLStorage {
 
-    private HikariDataSource dataSource;
+    private String host;
+    private int port;
+    private String database;
+    private String username;
+    private String password;
 
     // PLAYER (world_name, uuid, last_online)
     // WORLD (world_name, world creation time, world deletion time, stats??)
@@ -18,79 +22,189 @@ public class MySQLStorage implements SQLStorage {
     private String create_worlds_table;
     private String create_portals_table;
 
+    private String insert_player;
+    private String update_player;
+    private String delete_player;
+    private String query_players;
+    private String delete_players;
+
+    private String insert_world;
+    private String insert_portal;
+
     public MySQLStorage(String host, int port, String database, String username, String password,
                         String playersTable, String worldsTable, String portalsTable) {
-        this.create_players_table = "CREATE TABLE IF NOT EXISTS " + playersTable + " (world_name VARCHAR(20), uuid VARCHAR(36), last_online BIGINT);";
-        this.create_worlds_table = "CREATE TABLE IF NOT EXISTS " + worldsTable + " (world_name VARCHAR(20), created INT, deleted INT)"; // more
-        this.create_portals_table = "CREATE TABLE IF NOT EXISTS " + portalsTable + " (world_name VARCHAR(20), x INT, z INT, portal_close_time INT);";
+        this.create_players_table = "CREATE TABLE IF NOT EXISTS " + playersTable + " (" +
+                "world_name VARCHAR(20) NOT NULL, " +
+                "uuid VARCHAR(36) NOT NULL, " +
+                "last_online BIGINT, " +
+                "UNIQUE (uuid));";
+        this.create_worlds_table = "CREATE TABLE IF NOT EXISTS " + worldsTable + " (" +
+                "world_name VARCHAR(20) NOT NULL, " +
+                "created INT, " +
+                "deleted INT, " +
+                "UNIQUE (world_name));";
+        this.create_portals_table = "CREATE TABLE IF NOT EXISTS " + portalsTable + " (" +
+                "world_name VARCHAR(20) NOT NULL, " +
+                "x INT NOT NULL, " +
+                "z INT NOT NULL, " +
+                "portal_close_time INT, " +
+                "UNIQUE (world_name));";
+
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = this.getConnection()) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(create_players_table);
+                    statement.execute(create_worlds_table);
+                    statement.execute(create_portals_table);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        this.insert_player = "INSERT INTO " + playersTable + " (world_name, uuid, last_online) VALUES (?, ?, ?);";
+        this.update_player = "UPDATE " + playersTable + " SET last_online = ? WHERE uuid = ?;";
+        this.delete_player = "DELETE FROM " + playersTable + " WHERE uuid = ?;";
+        this.query_players = "SELECT uuid, last_online FROM " + playersTable + " WHERE world_name = ?;";
+        this.delete_players = "DELETE FROM " + playersTable + " WHERE world_name = ?;";
+
+        this.insert_world = "INSERT INTO " + worldsTable + " (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
+        this.insert_portal = "INSERT INTO " + portalsTable + " (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (Exception e) {
             System.out.println("MySQL driver not found");
         }
-
-        dataSource = new HikariDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
-        dataSource.setPoolName("mcatlas-end-pool");
-        dataSource.setMaximumPoolSize(3);
-        dataSource.setConnectionTimeout(3000);
-        dataSource.setLeakDetectionThreshold(3000);
     }
 
     @Override
-    public void savePlayer(String uuid, String worldName, long logoutTime) {
-
+    public CompletableFuture<Void> savePlayer(String uuid, String worldName, long logoutTime) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(insert_player)) {
+                    statement.setString(0, worldName);
+                    statement.setString(1, uuid);
+                    statement.setLong(2, logoutTime);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void updatePlayer(String uuid, long logoutTime) {
-
+    public CompletableFuture<Void> updatePlayer(String uuid, long logoutTime) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(update_player)) {
+                    statement.setLong(0, logoutTime);
+                    statement.setString(1, uuid);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void removePlayer(String uuid) {
-
+    public CompletableFuture<Void> removePlayer(String uuid) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(delete_player)) {
+                    statement.setString(0, uuid);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public Map<UUID, Long> getPlayers(String worldName) {
-        return null;
+    public CompletableFuture<Map<UUID, Long>> getPlayers(String worldName) {
+        return CompletableFuture.supplyAsync(() -> {
+            Map<UUID, Long> players = new HashMap<>();
+
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(query_players)) {
+                    statement.setString(0, worldName);
+
+                    try (ResultSet rs = statement.executeQuery()) {
+                        while (rs.next()) {
+                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                            long lastOnline = rs.getLong("last_online");
+                            players.put(uuid, lastOnline);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return players;
+        });
     }
 
     @Override
-    public void clearPlayers(String worldName) {
-
+    public CompletableFuture<Void> clearPlayers(String worldName) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(delete_players)) {
+                    statement.setString(0, worldName);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void saveWorld(String worldName, long creationTime) {
-
+    public CompletableFuture<Void> saveWorld(String worldName, long creationTime) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(insert_world)) {
+                    statement.setString(0, worldName);
+                    statement.setLong(1, creationTime);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void savePortal(String worldName, int x, int z, long expiryDate) {
-
-    }
-
-    @Override
-    public void createTables() throws SQLException {
-        try (Connection c = getConnection();
-             PreparedStatement update = c.prepareStatement(create_players_table);
-             PreparedStatement update2 = c.prepareStatement(create_worlds_table)) {
-            update.execute();
-            update2.execute();
-        } catch (SQLException e) {
-            throw e;
-        }
+    public CompletableFuture<Void> savePortal(String worldName, int x, int z, long expiryDate) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(insert_portal)) {
+                    statement.setString(0, worldName);
+                    statement.setInt(1, x);
+                    statement.setInt(2, z);
+                    statement.setLong(3, expiryDate);
+                    statement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database;
+
+        try {
+            return DriverManager.getConnection(jdbcUrl, username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }
