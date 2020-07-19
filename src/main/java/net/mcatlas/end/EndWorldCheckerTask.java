@@ -6,11 +6,14 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 
 import java.io.File;
+import java.util.Map;
+import java.util.UUID;
 
 public class EndWorldCheckerTask implements Runnable {
 
     private static final long DAY_LENGTH = 86400000;
     private static final long TWELVE_HOURS_LENGTH = 43200000;
+    private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
 
     private long nextCreationTime = newCreationTime();
 
@@ -28,7 +31,7 @@ public class EndWorldCheckerTask implements Runnable {
             Bukkit.getLogger().info("New end world");
             // create new end world
             nextCreationTime = newCreationTime();
-            createEndWorld();
+            World endWorld = createEndWorld();
         }
     }
 
@@ -37,6 +40,21 @@ public class EndWorldCheckerTask implements Runnable {
             if (world.getPlayers().size() > 0) continue;
             // check db for player times since they last went in the world
             // if all players r gone, deleteWorld(world.getName());
+            EndPlugin.get().getStorage().getPlayers(world.getName()).thenAccept(players -> {
+                boolean keep = false;
+                long currentTime = System.currentTimeMillis();
+                for (Map.Entry<UUID, Long> entry : players.entrySet()) {
+                    UUID uuid = entry.getKey();
+                    long lastTime = entry.getValue();
+                    if (currentTime - lastTime <= OFFLINE_BEFORE_DELETE_LENGTH) {
+                        keep = true;
+                        break;
+                    }
+                }
+                if (!keep) {
+                    deleteWorld(world.getName());
+                }
+            });
         }
     }
 

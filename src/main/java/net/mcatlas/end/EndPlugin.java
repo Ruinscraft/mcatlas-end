@@ -1,6 +1,8 @@
 package net.mcatlas.end;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import net.mcatlas.end.storage.MySQLStorage;
+import net.mcatlas.end.storage.Storage;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,6 +20,8 @@ public class EndPlugin extends JavaPlugin {
 
     private static EndPlugin instance;
 
+    private Storage storage;
+
     private List<World> endWorlds;
 
     static {
@@ -33,16 +37,37 @@ public class EndPlugin extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
+        setupStorage();
+
         this.endWorlds = this.getCurrentEndWorlds();
 
         Bukkit.getScheduler().runTaskTimer(this, new EndWorldCheckerTask(), 20 * 10, 60 * 20);
 
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
         // check end portal table and create portal
+
     }
 
     @Override
     public void onDisable() {
         instance = null;
+    }
+
+    public Storage getStorage() {
+        return this.storage;
+    }
+
+    private void setupStorage() {
+        String host = getConfig().getString("storage.mysql.host");
+        int port = getConfig().getInt("storage.mysql.port");
+        String database = getConfig().getString("storage.mysql.database");
+        String username = getConfig().getString("storage.mysql.username");
+        String password = getConfig().getString("storage.mysql.password");
+        String playersTable = getConfig().getString("storage.mysql.playersTable");
+        String worldsTable = getConfig().getString("storage.mysql.worldsTable");
+        String portalsTable = getConfig().getString("storage.mysql.portalsTable");
+
+        storage = new MySQLStorage(host, port, database, username, password, playersTable, worldsTable, portalsTable);
     }
 
     public List<World> getCurrentEndWorlds() {

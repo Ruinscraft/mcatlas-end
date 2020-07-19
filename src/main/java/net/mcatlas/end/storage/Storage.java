@@ -1,6 +1,9 @@
 package net.mcatlas.end.storage;
 
+import net.mcatlas.end.EndPortal;
+
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,7 +27,6 @@ public interface Storage {
     // put portal
     CompletableFuture<Void> savePortal(String worldName, int x, int z, long expiryDate);
     // get portal list
-    /* gotta make an object for this */
-
+    CompletableFuture<Set<EndPortal>> getPortals();
 
 }

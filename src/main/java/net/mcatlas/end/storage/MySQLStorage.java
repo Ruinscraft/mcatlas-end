@@ -1,11 +1,9 @@
 package net.mcatlas.end.storage;
 
-import com.zaxxer.hikari.HikariDataSource;
+import net.mcatlas.end.EndPortal;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class MySQLStorage implements SQLStorage {
@@ -30,6 +28,7 @@ public class MySQLStorage implements SQLStorage {
 
     private String insert_world;
     private String insert_portal;
+    private String query_portals;
 
     public MySQLStorage(String host, int port, String database, String username, String password,
                         String playersTable, String worldsTable, String portalsTable) {
@@ -70,6 +69,7 @@ public class MySQLStorage implements SQLStorage {
 
         this.insert_world = "INSERT INTO " + worldsTable + " (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
         this.insert_portal = "INSERT INTO " + portalsTable + " (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
+        this.query_portals = "SELECT * FROM " + portalsTable + ";";
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -191,6 +191,30 @@ public class MySQLStorage implements SQLStorage {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Set<EndPortal>> getPortals() {
+        return CompletableFuture.supplyAsync(() -> {
+            Set<EndPortal> endPortals = new HashSet<>();
+
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(query_portals);
+                        ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        String worldName = rs.getString("world_name");
+                        int x = rs.getInt("x");
+                        int z = rs.getInt("z");
+                        long portalCloseTime = rs.getLong("portal_close_time");
+                        endPortals.add(new EndPortal(worldName, x, z, portalCloseTime));
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return endPortals;
         });
     }
 
