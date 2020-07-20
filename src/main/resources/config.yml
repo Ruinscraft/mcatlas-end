@@ -1,5 +1,7 @@
-worldHeight: 10751
-worldWidth: 21503
+portal-world:
+  x-bound: 21503 # width
+  z-bound: 10751 # height
+  world: world
 
 storage:
   mysql:

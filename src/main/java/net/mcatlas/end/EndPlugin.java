@@ -19,12 +19,12 @@ public class EndPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        setupStorage();
-
-        endWorlds = getCurrentEndWorlds();
-
+        setupEndStorage();
+        setupEndPortalManager();
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
+
+        endWorlds = getCurrentEndWorlds();
 
         // update current portal from db if it exists
         endStorage.getPortals().thenAccept(portals -> {
@@ -49,7 +49,7 @@ public class EndPlugin extends JavaPlugin {
         return endPortalManager;
     }
 
-    private void setupStorage() {
+    private void setupEndStorage() {
         String host = getConfig().getString("storage.mysql.host");
         int port = getConfig().getInt("storage.mysql.port");
         String database = getConfig().getString("storage.mysql.database");
@@ -57,6 +57,20 @@ public class EndPlugin extends JavaPlugin {
         String password = getConfig().getString("storage.mysql.password");
 
         endStorage = new MySQLEndStorage(host, port, database, username, password);
+    }
+
+    private void setupEndPortalManager() {
+        int xBound = getConfig().getInt("portal-world.x-bound");
+        int zBound = getConfig().getInt("portal-world.z-bound");
+        String portalWorldName = getConfig().getString("portal-world.world");
+        World portalWorld = getServer().getWorld(portalWorldName);
+
+        if (portalWorld == null) {
+            getLogger().warning("Portal world not found. Check the config.");
+            return;
+        }
+
+        endPortalManager = new EndPortalManager(portalWorld, xBound, zBound);
     }
 
     public List<World> getCurrentEndWorlds() {
