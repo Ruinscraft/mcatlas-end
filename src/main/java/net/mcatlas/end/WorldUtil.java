@@ -3,6 +3,8 @@ package net.mcatlas.end;
 import com.palmergames.bukkit.towny.TownyAPI;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 
 import java.util.Random;
@@ -41,6 +43,19 @@ public final class WorldUtil {
         }
 
         return location;
+    }
+
+    public static World createEndWorld() {
+        Random seedGen = new Random();
+        String name = UUID.randomUUID().toString().substring(0, 8);
+        WorldCreator worldCreator = WorldCreator.name(name);
+
+        worldCreator.environment(World.Environment.THE_END);
+        worldCreator.generateStructures(true);
+        worldCreator.seed(seedGen.nextLong());
+        worldCreator.type(WorldType.NORMAL);
+
+        return worldCreator.createWorld();
     }
 
 }
