@@ -34,9 +34,7 @@ public class EventListener implements Listener {
 
         if (WorldUtil.isEndWorld(from)) {
             endPlugin.getEndStorage().removePlayer(player);
-        }
-
-        else if (WorldUtil.isEndWorld(to)) {
+        } else if (WorldUtil.isEndWorld(to)) {
             EndPortal currentPortal = endPlugin.getEndPortalManager().getCurrent();
 
             // cancel if no portal, portal isnt open, player teleported to an end world the portal doesnt lead to

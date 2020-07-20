@@ -22,6 +22,20 @@ public class EndWorldCheckerTask implements Runnable {
         this.endPlugin = endPlugin;
     }
 
+    private static void deleteWorld(World world) {
+        Bukkit.unloadWorld(world, false);
+
+        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+
+        if (folder.exists()) {
+            folder.delete();
+        }
+    }
+
+    public static long newCreationTime() {
+        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
+    }
+
     @Override
     public void run() {
         checkEndCreate();
@@ -40,7 +54,7 @@ public class EndWorldCheckerTask implements Runnable {
         }
     }
 
-    public void checkEndDelete () {
+    public void checkEndDelete() {
         for (World world : endPlugin.getCurrentEndWorlds()) {
             int playerCount = world.getPlayers().size();
 
@@ -72,20 +86,6 @@ public class EndWorldCheckerTask implements Runnable {
                 });
             }
         }
-    }
-
-    private static void deleteWorld(World world) {
-        Bukkit.unloadWorld(world, false);
-
-        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
-
-        if (folder.exists()) {
-            folder.delete();
-        }
-    }
-
-    public static long newCreationTime() {
-        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 
 }

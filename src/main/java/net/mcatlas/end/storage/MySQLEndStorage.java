@@ -57,6 +57,16 @@ public class MySQLEndStorage implements EndStorage {
                 "portal_close_time INT, " +
                 "UNIQUE (world_name));";
 
+        insert_player = "INSERT INTO end_players (world_name, uuid, last_online) VALUES (?, ?, ?);";
+        update_player = "UPDATE end_players SET last_online = ? WHERE uuid = ?;";
+        delete_player = "DELETE FROM end_players WHERE uuid = ?;";
+        query_players = "SELECT uuid, last_online FROM end_players WHERE world_name = ?;";
+        delete_players = "DELETE FROM end_players WHERE world_name = ?;";
+
+        insert_world = "INSERT INTO end_worlds (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
+        insert_portal = "INSERT INTO end_portals (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
+        query_portals = "SELECT * FROM end_portals;";
+
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (Statement statement = connection.createStatement()) {
@@ -68,16 +78,6 @@ public class MySQLEndStorage implements EndStorage {
                 e.printStackTrace();
             }
         });
-
-        insert_player = "INSERT INTO end_players (world_name, uuid, last_online) VALUES (?, ?, ?);";
-        update_player = "UPDATE end_players SET last_online = ? WHERE uuid = ?;";
-        delete_player = "DELETE FROM end_players WHERE uuid = ?;";
-        query_players = "SELECT uuid, last_online FROM end_players WHERE world_name = ?;";
-        delete_players = "DELETE FROM end_players WHERE world_name = ?;";
-
-        insert_world = "INSERT INTO end_worlds (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
-        insert_portal = "INSERT INTO end_portals (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
-        query_portals = "SELECT * FROM end_portals;";
     }
 
     @Override

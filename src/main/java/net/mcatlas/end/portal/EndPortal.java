@@ -1,6 +1,5 @@
 package net.mcatlas.end.portal;
 
-import org.bukkit.Location;
 import org.bukkit.World;
 
 public class EndPortal {
