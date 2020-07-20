@@ -9,7 +9,7 @@ import java.util.UUID;
 public class EndWorldCheckerTask implements Runnable {
 
     private static final long DAY_LENGTH = 86400000;
-    private static final long TWELVE_HOURS_LENGTH = 43200000;
+    private static final long DAY_HALF_LENGTH = DAY_LENGTH / 2;
     private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
     private static final long PORTAL_TIME_OPEN_LENGTH = 3600000;
 
@@ -17,7 +17,7 @@ public class EndWorldCheckerTask implements Runnable {
 
     // generate new time for creating end world in millis
     public static long newCreationTime() {
-        return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
+        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
     }
 
     // once a minute
