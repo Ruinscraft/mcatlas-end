@@ -14,11 +14,6 @@ public final class WorldUtil {
 
     private static final Random RANDOM = new Random();
 
-    public static String generateWorldName() {
-        String uu = UUID.randomUUID().toString().substring(0, 8);
-        return "endworld_" + uu;
-    }
-
     public static boolean isInEndWorld(Player player) {
         return isEndWorld(player.getWorld());
     }
