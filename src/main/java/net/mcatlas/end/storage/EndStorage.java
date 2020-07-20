@@ -18,13 +18,13 @@ public interface EndStorage {
     CompletableFuture<Void> updatePlayer(Player player, long logoutTime);
 
     // remove player entry on world leave
-    CompletableFuture<Void> removePlayer(Player player);
+    CompletableFuture<Void> deletePlayer(Player player);
 
     // get players in world
     CompletableFuture<Map<UUID, Long>> getPlayers(World world);
 
     // remove all entries for world on world deletion
-    CompletableFuture<Void> clearPlayers(String worldName);
+    CompletableFuture<Void> deletePlayers(World world);
 
     // put world in world table on creation
     CompletableFuture<Void> saveWorld(World world, long creationTime);

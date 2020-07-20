@@ -84,11 +84,11 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Void> savePlayer(Player player, long logoutTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(insert_player)) {
-                    statement.setString(0, player.getLocation().getWorld().getName());
-                    statement.setString(1, player.getUniqueId().toString());
-                    statement.setLong(2, logoutTime);
-                    statement.execute();
+                try (PreparedStatement insert = connection.prepareStatement(insert_player)) {
+                    insert.setString(0, player.getLocation().getWorld().getName());
+                    insert.setString(1, player.getUniqueId().toString());
+                    insert.setLong(2, logoutTime);
+                    insert.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -100,10 +100,10 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Void> updatePlayer(Player player, long logoutTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(update_player)) {
-                    statement.setLong(0, logoutTime);
-                    statement.setString(1, player.getUniqueId().toString());
-                    statement.execute();
+                try (PreparedStatement update = connection.prepareStatement(update_player)) {
+                    update.setLong(0, logoutTime);
+                    update.setString(1, player.getUniqueId().toString());
+                    update.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -112,12 +112,12 @@ public class MySQLEndStorage implements EndStorage {
     }
 
     @Override
-    public CompletableFuture<Void> removePlayer(Player player) {
+    public CompletableFuture<Void> deletePlayer(Player player) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(delete_player)) {
-                    statement.setString(0, player.getUniqueId().toString());
-                    statement.execute();
+                try (PreparedStatement delete = connection.prepareStatement(delete_player)) {
+                    delete.setString(0, player.getUniqueId().toString());
+                    delete.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -131,13 +131,14 @@ public class MySQLEndStorage implements EndStorage {
             Map<UUID, Long> players = new HashMap<>();
 
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(query_players)) {
-                    statement.setString(0, world.getName());
+                try (PreparedStatement query = connection.prepareStatement(query_players)) {
+                    query.setString(0, world.getName());
 
-                    try (ResultSet rs = statement.executeQuery()) {
-                        while (rs.next()) {
-                            UUID uuid = UUID.fromString(rs.getString("uuid"));
-                            long lastOnline = rs.getLong("last_online");
+                    try (ResultSet result = query.executeQuery()) {
+                        while (result.next()) {
+                            UUID uuid = UUID.fromString(result.getString("uuid"));
+                            long lastOnline = result.getLong("last_online");
+
                             players.put(uuid, lastOnline);
                         }
                     }
@@ -151,12 +152,12 @@ public class MySQLEndStorage implements EndStorage {
     }
 
     @Override
-    public CompletableFuture<Void> clearPlayers(String worldName) {
+    public CompletableFuture<Void> deletePlayers(World world) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(delete_players)) {
-                    statement.setString(0, worldName);
-                    statement.execute();
+                try (PreparedStatement delete = connection.prepareStatement(delete_players)) {
+                    delete.setString(0, world.getName());
+                    delete.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -168,10 +169,10 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Void> saveWorld(World world, long creationTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(insert_world)) {
-                    statement.setString(0, world.getName());
-                    statement.setLong(1, creationTime);
-                    statement.execute();
+                try (PreparedStatement insert = connection.prepareStatement(insert_world)) {
+                    insert.setString(0, world.getName());
+                    insert.setLong(1, creationTime);
+                    insert.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -183,12 +184,12 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Void> savePortal(EndPortal portal) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(insert_portal)) {
-                    statement.setString(0, portal.getEnd().getName());
-                    statement.setInt(1, portal.getX());
-                    statement.setInt(2, portal.getZ());
-                    statement.setLong(3, portal.getClosingTime());
-                    statement.execute();
+                try (PreparedStatement insert = connection.prepareStatement(insert_portal)) {
+                    insert.setString(0, portal.getEnd().getName());
+                    insert.setInt(1, portal.getX());
+                    insert.setInt(2, portal.getZ());
+                    insert.setLong(3, portal.getClosingTime());
+                    insert.execute();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -202,17 +203,18 @@ public class MySQLEndStorage implements EndStorage {
             List<EndPortal> portals = new ArrayList<>();
 
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(query_portals);
-                     ResultSet rs = statement.executeQuery()) {
-                    while (rs.next()) {
-                        String worldName = rs.getString("world_name");
-                        int x = rs.getInt("x");
-                        int z = rs.getInt("z");
-                        long portalCloseTime = rs.getLong("portal_close_time");
-                        World world = Bukkit.getWorld(worldName);
+                try (PreparedStatement query = connection.prepareStatement(query_portals)) {
+                    try (ResultSet result = query.executeQuery()) {
+                        while (result.next()) {
+                            String worldName = result.getString("world_name");
+                            World world = Bukkit.getWorld(worldName);
+                            int x = result.getInt("x");
+                            int z = result.getInt("z");
+                            long portalCloseTime = result.getLong("portal_close_time");
 
-                        if (world != null) {
-                            portals.add(new EndPortal(world, x, z, portalCloseTime));
+                            if (world != null) {
+                                portals.add(new EndPortal(world, x, z, portalCloseTime));
+                            }
                         }
                     }
                 }
