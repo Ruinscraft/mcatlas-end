@@ -2,20 +2,20 @@ package net.mcatlas.end;
 
 public class EndPortal {
 
-    private String worldName;
+    private String endWorld;
     private int x;
     private int z;
     private long closingTime;
 
-    public EndPortal(String worldName, int x, int z, long closingTime) {
-        this.worldName = worldName;
+    public EndPortal(String endWorld, int x, int z, long closingTime) {
+        this.endWorld = endWorld;
         this.x = x;
         this.z = z;
         this.closingTime = closingTime;
     }
 
-    public String getWorldName() {
-        return this.worldName;
+    public String getEndWorldName() {
+        return this.endWorld;
     }
 
     public int getX() {

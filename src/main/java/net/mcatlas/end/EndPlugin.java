@@ -9,6 +9,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ public class EndPlugin extends JavaPlugin {
     private Storage storage;
 
     private List<World> endWorlds;
+
+    private EndPortal portal;
 
     static {
         STARTUP_TIME = ManagementFactory.getRuntimeMXBean().getStartTime();
@@ -46,8 +49,8 @@ public class EndPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new EndWorldCheckerTask(), 20 * 60 * 15, 20 * 60);
 
         getServer().getPluginManager().registerEvents(new EventListener(), this);
-        // check end portal table and create portal
 
+        loadCurrentEndPortal();
     }
 
     @Override
@@ -78,6 +81,23 @@ public class EndPlugin extends JavaPlugin {
             if (world.getName().startsWith("endworld")) worlds.add(world);
         }
         return worlds;
+    }
+
+    @Nullable
+    public EndPortal getCurrentPortal() {
+        if (this.portal == null || !this.portal.isOpen()) return null;
+        return this.portal;
+    }
+
+    private void loadCurrentEndPortal() {
+        this.getStorage().getPortals().thenAccept(portals -> {
+            for (EndPortal portal : portals) {
+                if (portal != null && portal.isOpen()) {
+                    this.portal = portal;
+                }
+            }
+            this.portal = null;
+        });
     }
 
     public Location findNewPortalLocation() {
