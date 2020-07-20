@@ -42,7 +42,12 @@ public class EndWorldCheckerTask implements Runnable {
 
     public void checkDeletionTime() {
         for (World world : EndPlugin.get().getCurrentEndWorlds()) {
+            // players currently in world? continue
             if (world.getPlayers().size() > 0) continue;
+
+            // if world is currently accessible, continue
+            EndPortal portal = EndPlugin.get().getCurrentPortal();
+            if (portal.isOpen() && portal.getEndWorldName().equals(world.getName())) continue;
             // check db for player times since they last went in the world
             // if all players r gone, deleteWorld(world.getName());
             EndPlugin.get().getStorage().getPlayers(world.getName()).thenAccept(players -> {
