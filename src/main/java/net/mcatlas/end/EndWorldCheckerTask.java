@@ -1,9 +1,6 @@
 package net.mcatlas.end;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
+import org.bukkit.*;
 
 import java.io.File;
 import java.util.Map;
@@ -14,6 +11,7 @@ public class EndWorldCheckerTask implements Runnable {
     private static final long DAY_LENGTH = 86400000;
     private static final long TWELVE_HOURS_LENGTH = 43200000;
     private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
+    private static final long PORTAL_TIME_OPEN_LENGTH = 3600000;
 
     private long nextCreationTime = newCreationTime();
 
@@ -32,6 +30,14 @@ public class EndWorldCheckerTask implements Runnable {
             // create new end world
             nextCreationTime = newCreationTime();
             World endWorld = createEndWorld();
+
+            Location location = EndPlugin.get().findNewPortalLocation();
+            EndPortal newPortal = new EndPortal(endWorld.getName(),
+                    location.getBlockX(), location.getBlockZ(),
+                    System.currentTimeMillis() + PORTAL_TIME_OPEN_LENGTH);
+            EndPlugin.get().getStorage().savePortal(newPortal.getEndWorldName(), newPortal.getX(),
+                    newPortal.getZ(), newPortal.getClosingTime());
+            EndPlugin.get().updateEndPortal(newPortal);
         }
     }
 

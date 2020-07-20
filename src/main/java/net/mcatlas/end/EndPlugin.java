@@ -50,7 +50,14 @@ public class EndPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new EventListener(), this);
 
-        loadCurrentEndPortal();
+        this.getStorage().getPortals().thenAccept(portals -> {
+            for (EndPortal portal : portals) {
+                if (portal != null && portal.isOpen()) {
+                    this.portal = portal;
+                }
+            }
+            this.portal = null;
+        });
     }
 
     @Override
@@ -89,15 +96,8 @@ public class EndPlugin extends JavaPlugin {
         return this.portal;
     }
 
-    private void loadCurrentEndPortal() {
-        this.getStorage().getPortals().thenAccept(portals -> {
-            for (EndPortal portal : portals) {
-                if (portal != null && portal.isOpen()) {
-                    this.portal = portal;
-                }
-            }
-            this.portal = null;
-        });
+    public void updateEndPortal(EndPortal portal) {
+        this.portal = portal;
     }
 
     public Location findNewPortalLocation() {
