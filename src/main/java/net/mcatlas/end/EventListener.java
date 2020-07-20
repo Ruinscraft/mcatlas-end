@@ -33,7 +33,7 @@ public class EventListener implements Listener {
         }
 
         if (WorldUtil.isEndWorld(from)) {
-            endPlugin.getEndStorage().removePlayer(player);
+            endPlugin.getEndStorage().deletePlayer(player);
         } else if (WorldUtil.isEndWorld(to)) {
             EndPortal currentPortal = endPlugin.getEndPortalManager().getCurrent();
 
