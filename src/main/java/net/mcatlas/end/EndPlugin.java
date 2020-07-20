@@ -129,11 +129,11 @@ public class EndPlugin extends JavaPlugin {
     }
 
     public static boolean isEndWorld(World world) {
-        return world.getName().contains("endworld");
+        return world.getEnvironment() == World.Environment.THE_END;
     }
 
     public static boolean isInOverworld(Player player) {
-        return !player.getWorld().getName().contains("nether") && !player.getWorld().getName().contains("endworld");
+        return player.getWorld().getEnvironment() == World.Environment.NORMAL;
     }
 
 }
