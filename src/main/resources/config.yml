@@ -1,2 +1,10 @@
 worldHeight: 10751
 worldWidth: 21503
+
+storage:
+  mysql:
+    host: localhost
+    port: 3306
+    database: mcatlas
+    username: root
+    password: password

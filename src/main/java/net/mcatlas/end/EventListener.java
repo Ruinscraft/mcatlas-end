@@ -1,6 +1,6 @@
 package net.mcatlas.end;
 
-import org.bukkit.Bukkit;
+import net.mcatlas.end.portal.EndPortal;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -11,12 +11,14 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class EventListener implements Listener {
 
+    private EndPlugin endPlugin;
+
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+
         // if player is in end world, put last login time
-        if (EndPlugin.isInEndWorld(player)) {
-            EndPlugin.get().getStorage().savePlayer(player.getUniqueId().toString(),
-                    player.getWorld().getName(), System.currentTimeMillis());
+        if (WorldUtil.isInEndWorld(player)) {
+            endPlugin.getEndStorage().savePlayer(player, System.currentTimeMillis());
         }
     }
 
@@ -26,40 +28,47 @@ public class EventListener implements Listener {
         Location fromLocation = event.getFrom();
         World from = fromLocation.getWorld();
 
-        if (to.getName().equals(from.getName())) return;
-
-        if (EndPlugin.isEndWorld(from)) {
-            EndPlugin.get().getStorage().removePlayer(event.getPlayer().getUniqueId().toString());
+        if (to.getName().equals(from.getName())) {
             return;
         }
 
-        if (EndPlugin.isEndWorld(to)) {
-            EndPortal currentPortal = EndPlugin.get().getCurrentPortal();
+        if (WorldUtil.isEndWorld(from)) {
+            endPlugin.getEndStorage().removePlayer(player);
+        }
+
+        else if (WorldUtil.isEndWorld(to)) {
+            EndPortal currentPortal = endPlugin.getEndPortalManager().getCurrent();
+
             // cancel if no portal, portal isnt open, player teleported to an end world the portal doesnt lead to
             if (currentPortal == null || !currentPortal.isOpen()) {
                 event.setCancelled(true);
-                return;
             }
-            if (!currentPortal.getEndWorldName().equals(to.getName())) {
+
+            if (!currentPortal.getEnd().equals(to)) {
                 event.setCancelled(true);
-                return;
             }
         }
     }
 
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!EndPlugin.isInOverworld(player)) return;
 
-        EndPortal portal = EndPlugin.get().getCurrentPortal();
-        if (portal == null || !portal.isOpen()) return;
+        if (!WorldUtil.isInOverworld(player)) {
+            return;
+        }
+
+        EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
+
+        if (portal == null || !portal.isOpen()) {
+            return;
+        }
 
         // teleport to current end world if close to portal
         Location location = new Location(player.getWorld(), portal.getX(), player.getLocation().getY(), portal.getZ());
         double dist = location.distanceSquared(player.getLocation());
+
         if (dist < 36) { // 6 blocks
-            World world = Bukkit.getWorld(portal.getEndWorldName());
-            player.teleport(world.getSpawnLocation());
+            player.teleport(portal.getEnd().getSpawnLocation());
         }
     }
 

@@ -1,12 +1,15 @@
 package net.mcatlas.end.storage;
 
-import net.mcatlas.end.EndPortal;
+import net.mcatlas.end.portal.EndPortal;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class MySQLStorage implements SQLStorage {
+public class MySQLEndStorage implements EndStorage {
 
     private String host;
     private int port;
@@ -30,19 +33,18 @@ public class MySQLStorage implements SQLStorage {
     private String insert_portal;
     private String query_portals;
 
-    public MySQLStorage(String host, int port, String database, String username, String password,
-                        String playersTable, String worldsTable, String portalsTable) {
-        this.create_players_table = "CREATE TABLE IF NOT EXISTS " + playersTable + " (" +
+    public MySQLEndStorage(String host, int port, String database, String username, String password) {
+        this.create_players_table = "CREATE TABLE IF NOT EXISTS end_players (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "uuid VARCHAR(36) NOT NULL, " +
                 "last_online BIGINT, " +
                 "UNIQUE (uuid));";
-        this.create_worlds_table = "CREATE TABLE IF NOT EXISTS " + worldsTable + " (" +
+        this.create_worlds_table = "CREATE TABLE IF NOT EXISTS end_worlds (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "created INT, " +
                 "deleted INT, " +
                 "UNIQUE (world_name));";
-        this.create_portals_table = "CREATE TABLE IF NOT EXISTS " + portalsTable + " (" +
+        this.create_portals_table = "CREATE TABLE IF NOT EXISTS end_portals (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "x INT NOT NULL, " +
                 "z INT NOT NULL, " +
@@ -61,15 +63,15 @@ public class MySQLStorage implements SQLStorage {
             }
         });
 
-        this.insert_player = "INSERT INTO " + playersTable + " (world_name, uuid, last_online) VALUES (?, ?, ?);";
-        this.update_player = "UPDATE " + playersTable + " SET last_online = ? WHERE uuid = ?;";
-        this.delete_player = "DELETE FROM " + playersTable + " WHERE uuid = ?;";
-        this.query_players = "SELECT uuid, last_online FROM " + playersTable + " WHERE world_name = ?;";
-        this.delete_players = "DELETE FROM " + playersTable + " WHERE world_name = ?;";
+        this.insert_player = "INSERT INTO end_players (world_name, uuid, last_online) VALUES (?, ?, ?);";
+        this.update_player = "UPDATE end_players SET last_online = ? WHERE uuid = ?;";
+        this.delete_player = "DELETE FROM end_players WHERE uuid = ?;";
+        this.query_players = "SELECT uuid, last_online FROM end_players WHERE world_name = ?;";
+        this.delete_players = "DELETE FROM end_players WHERE world_name = ?;";
 
-        this.insert_world = "INSERT INTO " + worldsTable + " (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
-        this.insert_portal = "INSERT INTO " + portalsTable + " (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
-        this.query_portals = "SELECT * FROM " + portalsTable + ";";
+        this.insert_world = "INSERT INTO end_worlds (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
+        this.insert_portal = "INSERT INTO end_portals (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
+        this.query_portals = "SELECT * FROM end_portals;";
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -79,12 +81,12 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Void> savePlayer(String uuid, String worldName, long logoutTime) {
+    public CompletableFuture<Void> savePlayer(Player player, long logoutTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(insert_player)) {
-                    statement.setString(0, worldName);
-                    statement.setString(1, uuid);
+                    statement.setString(0, player.getLocation().getWorld().getName());
+                    statement.setString(1, player.getUniqueId().toString());
                     statement.setLong(2, logoutTime);
                     statement.execute();
                 }
@@ -95,12 +97,12 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Void> updatePlayer(String uuid, long logoutTime) {
+    public CompletableFuture<Void> updatePlayer(Player player, long logoutTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(update_player)) {
                     statement.setLong(0, logoutTime);
-                    statement.setString(1, uuid);
+                    statement.setString(1, player.getUniqueId().toString());
                     statement.execute();
                 }
             } catch (SQLException e) {
@@ -110,11 +112,11 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Void> removePlayer(String uuid) {
+    public CompletableFuture<Void> removePlayer(Player player) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(delete_player)) {
-                    statement.setString(0, uuid);
+                    statement.setString(0, player.getUniqueId().toString());
                     statement.execute();
                 }
             } catch (SQLException e) {
@@ -124,13 +126,13 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Map<UUID, Long>> getPlayers(String worldName) {
+    public CompletableFuture<Map<UUID, Long>> getPlayers(World world) {
         return CompletableFuture.supplyAsync(() -> {
             Map<UUID, Long> players = new HashMap<>();
 
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(query_players)) {
-                    statement.setString(0, worldName);
+                    statement.setString(0, world.getName());
 
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {
@@ -163,11 +165,11 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Void> saveWorld(String worldName, long creationTime) {
+    public CompletableFuture<Void> saveWorld(World world, long creationTime) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(insert_world)) {
-                    statement.setString(0, worldName);
+                    statement.setString(0, world.getName());
                     statement.setLong(1, creationTime);
                     statement.execute();
                 }
@@ -178,14 +180,14 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Void> savePortal(String worldName, int x, int z, long expiryDate) {
+    public CompletableFuture<Void> savePortal(EndPortal portal) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(insert_portal)) {
-                    statement.setString(0, worldName);
-                    statement.setInt(1, x);
-                    statement.setInt(2, z);
-                    statement.setLong(3, expiryDate);
+                    statement.setString(0, portal.getEnd().getName());
+                    statement.setInt(1, portal.getX());
+                    statement.setInt(2, portal.getZ());
+                    statement.setLong(3, portal.getClosingTime());
                     statement.execute();
                 }
             } catch (SQLException e) {
@@ -195,9 +197,9 @@ public class MySQLStorage implements SQLStorage {
     }
 
     @Override
-    public CompletableFuture<Set<EndPortal>> getPortals() {
+    public CompletableFuture<List<EndPortal>> getPortals() {
         return CompletableFuture.supplyAsync(() -> {
-            Set<EndPortal> endPortals = new HashSet<>();
+            List<EndPortal> portals = new ArrayList<>();
 
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(query_portals);
@@ -207,19 +209,23 @@ public class MySQLStorage implements SQLStorage {
                         int x = rs.getInt("x");
                         int z = rs.getInt("z");
                         long portalCloseTime = rs.getLong("portal_close_time");
-                        endPortals.add(new EndPortal(worldName, x, z, portalCloseTime));
+                        World world = Bukkit.getWorld(worldName);
+
+                        if (world != null) {
+                            portals.add(new EndPortal(world, x, z, portalCloseTime));
+                        }
                     }
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-            return endPortals;
+            return portals;
         });
     }
 
-    @Override
-    public Connection getConnection() throws SQLException {
+    // Close when done
+    public Connection getConnection() {
         String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database;
 
         try {

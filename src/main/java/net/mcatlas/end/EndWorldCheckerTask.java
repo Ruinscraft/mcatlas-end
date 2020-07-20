@@ -1,93 +1,91 @@
 package net.mcatlas.end;
 
-import org.bukkit.*;
+import net.mcatlas.end.portal.EndPortal;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 import java.io.File;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
 
 public class EndWorldCheckerTask implements Runnable {
 
+    private static final Random RANDOM = new Random();
     private static final long DAY_LENGTH = 86400000;
     private static final long DAY_HALF_LENGTH = DAY_LENGTH / 2;
     private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
     private static final long PORTAL_TIME_OPEN_LENGTH = 3600000;
 
     private long nextCreationTime = newCreationTime();
+    private EndPlugin endPlugin;
 
-    // generate new time for creating end world in millis
-    public static long newCreationTime() {
-        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
+    public EndWorldCheckerTask(EndPlugin endPlugin) {
+        this.endPlugin = endPlugin;
     }
 
-    // once a minute
     @Override
     public void run() {
-        checkCreationTime();
-
-        checkDeletionTime();
+        checkEndCreate();
+        checkEndDelete();
     }
 
-    public void checkCreationTime() {
-        if (System.currentTimeMillis() > this.nextCreationTime) {
-            Bukkit.getLogger().info("New end world");
-            // create new end world
+    public void checkEndCreate() {
+        if (System.currentTimeMillis() > nextCreationTime) {
+            Bukkit.getLogger().info("Creating new end world");
+
             nextCreationTime = newCreationTime();
-            World endWorld = createEndWorld();
 
-            Location location = EndPlugin.get().findNewPortalLocation();
-            EndPortal newPortal = new EndPortal(endWorld.getName(),
-                    location.getBlockX(), location.getBlockZ(),
-                    System.currentTimeMillis() + PORTAL_TIME_OPEN_LENGTH);
-            EndPlugin.get().getStorage().savePortal(newPortal.getEndWorldName(), newPortal.getX(),
-                    newPortal.getZ(), newPortal.getClosingTime());
-            EndPlugin.get().updateEndPortal(newPortal);
+            EndPortal portal = endPlugin.getEndPortalManager().createRandom();
+
+            endPlugin.getEndStorage().savePortal(portal);
         }
     }
 
-    public void checkDeletionTime() {
-        for (World world : EndPlugin.get().getCurrentEndWorlds()) {
-            // players currently in world? continue
-            if (world.getPlayers().size() > 0) continue;
+    public void checkEndDelete () {
+        for (World world : endPlugin.getCurrentEndWorlds()) {
+            int playerCount = world.getPlayers().size();
 
-            // if world is currently accessible, continue
-            EndPortal portal = EndPlugin.get().getCurrentPortal();
-            if (portal.isOpen() && portal.getEndWorldName().equals(world.getName())) continue;
-            // check db for player times since they last went in the world
-            // if all players r gone, deleteWorld(world.getName());
-            EndPlugin.get().getStorage().getPlayers(world.getName()).thenAccept(players -> {
-                boolean keep = false;
-                long currentTime = System.currentTimeMillis();
-                for (Map.Entry<UUID, Long> entry : players.entrySet()) {
-                    UUID uuid = entry.getKey();
-                    long lastTime = entry.getValue();
-                    if (currentTime - lastTime <= OFFLINE_BEFORE_DELETE_LENGTH) {
-                        keep = true;
-                        break;
+            if (playerCount > 0) {
+                continue;
+            }
+
+            EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
+
+            if (portal != null) {
+                // if closed or not the same end world
+                if (portal.isClosed() || !portal.getEnd().equals(world)) {
+                    deleteWorld(world);
+                }
+
+                endPlugin.getEndStorage().getPlayers(world).thenAccept(result -> {
+                    boolean delete = true;
+                    long currentTime = System.currentTimeMillis();
+
+                    for (long lastTimeInWorld : result.values()) {
+                        if (currentTime - lastTimeInWorld <= OFFLINE_BEFORE_DELETE_LENGTH) {
+                            delete = false; // someone has been in the world recent enough
+                        }
                     }
-                }
-                if (!keep) {
-                    deleteWorld(world.getName());
-                }
-            });
+
+                    if (delete) {
+                        deleteWorld(world);
+                    }
+                });
+            }
         }
     }
 
-    public World createEndWorld() {
-        WorldCreator worldCreator = WorldCreator.name(EndPlugin.generateWorldName());
-        worldCreator.environment(World.Environment.THE_END);
-        worldCreator.generateStructures(true);
-        worldCreator.seed(EndPlugin.random.nextLong());
-        worldCreator.type(WorldType.NORMAL);
-        return worldCreator.createWorld();
+    private static void deleteWorld(World world) {
+        Bukkit.unloadWorld(world, false);
+
+        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+
+        if (folder.exists()) {
+            folder.delete();
+        }
     }
 
-    // run check if players are gone etc. before running this
-    public void deleteWorld(String worldName) {
-        Bukkit.unloadWorld(worldName, false);
-
-        File folder = new File(Bukkit.getWorldContainer() + "/" + worldName);
-        folder.delete();
+    public static long newCreationTime() {
+        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 
 }
