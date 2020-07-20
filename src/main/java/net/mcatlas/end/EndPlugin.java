@@ -3,10 +3,12 @@ package net.mcatlas.end;
 import com.palmergames.bukkit.towny.TownyAPI;
 import net.mcatlas.end.storage.MySQLStorage;
 import net.mcatlas.end.storage.Storage;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +43,7 @@ public class EndPlugin extends JavaPlugin {
 
         this.endWorlds = this.getCurrentEndWorlds();
 
-        Bukkit.getScheduler().runTaskTimer(this, new EndWorldCheckerTask(), 20 * 10, 60 * 20);
+        Bukkit.getScheduler().runTaskTimer(this, new EndWorldCheckerTask(), 20 * 60 * 15, 20 * 60);
 
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         // check end portal table and create portal
@@ -97,6 +99,18 @@ public class EndPlugin extends JavaPlugin {
     public static String generateWorldName() {
         String uu = UUID.randomUUID().toString().substring(0, 8);
         return "endworld_" + uu;
+    }
+
+    public static boolean isInEndWorld(Player player) {
+        return isEndWorld(player.getWorld());
+    }
+
+    public static boolean isEndWorld(World world) {
+        return world.getName().contains("endworld");
+    }
+
+    public static boolean isInOverworld(Player player) {
+        return !player.getWorld().getName().contains("nether") && !player.getWorld().getName().contains("endworld");
     }
 
 }

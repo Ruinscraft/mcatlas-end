@@ -30,4 +30,8 @@ public class EndPortal {
         return this.closingTime;
     }
 
+    public boolean isOpen() {
+        return this.closingTime > System.currentTimeMillis();
+    }
+
 }
