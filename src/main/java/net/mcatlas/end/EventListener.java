@@ -35,6 +35,7 @@ public class EventListener implements Listener {
 
         if (EndPlugin.isEndWorld(to)) {
             EndPortal currentPortal = EndPlugin.get().getCurrentPortal();
+            // cancel if no portal, portal isnt open, player teleported to an end world the portal doesnt lead to
             if (currentPortal == null || !currentPortal.isOpen()) {
                 event.setCancelled(true);
                 return;
@@ -51,8 +52,9 @@ public class EventListener implements Listener {
         if (!EndPlugin.isInOverworld(player)) return;
 
         EndPortal portal = EndPlugin.get().getCurrentPortal();
-        if (portal == null) return;
+        if (portal == null || !portal.isOpen()) return;
 
+        // teleport to current end world if close to portal
         Location location = new Location(player.getWorld(), portal.getX(), player.getLocation().getY(), portal.getZ());
         double dist = location.distanceSquared(player.getLocation());
         if (dist < 36) { // 6 blocks

@@ -50,6 +50,7 @@ public class EndPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new EventListener(), this);
 
+        // update current portal from db if it exists
         this.getStorage().getPortals().thenAccept(portals -> {
             for (EndPortal portal : portals) {
                 if (portal != null && portal.isOpen()) {
@@ -108,6 +109,8 @@ public class EndPlugin extends JavaPlugin {
         int newHeight = ((int) (maxHeight * random.nextDouble())) + (maxWidth / 2);
 
         Location portalLocation = new Location(Bukkit.getWorlds().get(0), newWidth, 64, newHeight);
+
+        // if in a town, find another location
         String townName = TownyAPI.getInstance().getTownName(portalLocation);
         if (townName == null || townName.equals("")) {
             return findNewPortalLocation();

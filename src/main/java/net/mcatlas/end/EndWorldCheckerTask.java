@@ -21,7 +21,6 @@ public class EndWorldCheckerTask implements Runnable {
         checkCreationTime();
 
         checkDeletionTime();
-
     }
 
     public void checkCreationTime() {
@@ -64,6 +63,7 @@ public class EndWorldCheckerTask implements Runnable {
         }
     }
 
+    // generate new time for creating end world in millis
     public static long newCreationTime() {
         return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
     }
