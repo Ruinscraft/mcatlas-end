@@ -33,7 +33,7 @@ public class EndWorldCheckerTask implements Runnable {
     }
 
     public static long newCreationTime() {
-        return DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
+        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 
     @Override
