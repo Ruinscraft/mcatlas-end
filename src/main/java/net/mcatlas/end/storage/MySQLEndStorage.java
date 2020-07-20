@@ -34,17 +34,23 @@ public class MySQLEndStorage implements EndStorage {
     private String query_portals;
 
     public MySQLEndStorage(String host, int port, String database, String username, String password) {
-        this.create_players_table = "CREATE TABLE IF NOT EXISTS end_players (" +
+        this.host = host;
+        this.port = port;
+        this.database = database;
+        this.username = username;
+        this.password = password;
+
+        create_players_table = "CREATE TABLE IF NOT EXISTS end_players (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "uuid VARCHAR(36) NOT NULL, " +
                 "last_online BIGINT, " +
                 "UNIQUE (uuid));";
-        this.create_worlds_table = "CREATE TABLE IF NOT EXISTS end_worlds (" +
+        create_worlds_table = "CREATE TABLE IF NOT EXISTS end_worlds (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "created INT, " +
                 "deleted INT, " +
                 "UNIQUE (world_name));";
-        this.create_portals_table = "CREATE TABLE IF NOT EXISTS end_portals (" +
+        create_portals_table = "CREATE TABLE IF NOT EXISTS end_portals (" +
                 "world_name VARCHAR(20) NOT NULL, " +
                 "x INT NOT NULL, " +
                 "z INT NOT NULL, " +
@@ -52,7 +58,7 @@ public class MySQLEndStorage implements EndStorage {
                 "UNIQUE (world_name));";
 
         CompletableFuture.runAsync(() -> {
-            try (Connection connection = this.getConnection()) {
+            try (Connection connection = getConnection()) {
                 try (Statement statement = connection.createStatement()) {
                     statement.execute(create_players_table);
                     statement.execute(create_worlds_table);
@@ -63,21 +69,15 @@ public class MySQLEndStorage implements EndStorage {
             }
         });
 
-        this.insert_player = "INSERT INTO end_players (world_name, uuid, last_online) VALUES (?, ?, ?);";
-        this.update_player = "UPDATE end_players SET last_online = ? WHERE uuid = ?;";
-        this.delete_player = "DELETE FROM end_players WHERE uuid = ?;";
-        this.query_players = "SELECT uuid, last_online FROM end_players WHERE world_name = ?;";
-        this.delete_players = "DELETE FROM end_players WHERE world_name = ?;";
+        insert_player = "INSERT INTO end_players (world_name, uuid, last_online) VALUES (?, ?, ?);";
+        update_player = "UPDATE end_players SET last_online = ? WHERE uuid = ?;";
+        delete_player = "DELETE FROM end_players WHERE uuid = ?;";
+        query_players = "SELECT uuid, last_online FROM end_players WHERE world_name = ?;";
+        delete_players = "DELETE FROM end_players WHERE world_name = ?;";
 
-        this.insert_world = "INSERT INTO end_worlds (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
-        this.insert_portal = "INSERT INTO end_portals (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
-        this.query_portals = "SELECT * FROM end_portals;";
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (Exception e) {
-            System.out.println("MySQL driver not found");
-        }
+        insert_world = "INSERT INTO end_worlds (world_name, created) VALUES (?, ?);"; // maybe will need to be updated
+        insert_portal = "INSERT INTO end_portals (world_name, x, z, portal_close_time) VALUES (?, ?, ?, ?);";
+        query_portals = "SELECT * FROM end_portals;";
     }
 
     @Override
