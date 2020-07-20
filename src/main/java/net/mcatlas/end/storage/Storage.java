@@ -11,12 +11,16 @@ public interface Storage {
 
     // put logout time of player for world on logout
     CompletableFuture<Void> savePlayer(String uuid, String worldName, long logoutTime);
+
     // update logout time
     CompletableFuture<Void> updatePlayer(String uuid, long logoutTime);
+
     // remove player entry on world leave
     CompletableFuture<Void> removePlayer(String uuid);
+
     // get players in world
     CompletableFuture<Map<UUID, Long>> getPlayers(String worldName);
+
     // remove all entries for world on world deletion
     CompletableFuture<Void> clearPlayers(String worldName);
 
@@ -26,6 +30,7 @@ public interface Storage {
 
     // put portal
     CompletableFuture<Void> savePortal(String worldName, int x, int z, long expiryDate);
+
     // get portal list
     CompletableFuture<Set<EndPortal>> getPortals();
 

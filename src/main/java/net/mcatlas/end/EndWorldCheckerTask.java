@@ -15,6 +15,11 @@ public class EndWorldCheckerTask implements Runnable {
 
     private long nextCreationTime = newCreationTime();
 
+    // generate new time for creating end world in millis
+    public static long newCreationTime() {
+        return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
+    }
+
     // once a minute
     @Override
     public void run() {
@@ -66,11 +71,6 @@ public class EndWorldCheckerTask implements Runnable {
                 }
             });
         }
-    }
-
-    // generate new time for creating end world in millis
-    public static long newCreationTime() {
-        return TWELVE_HOURS_LENGTH + ((int) (DAY_LENGTH * EndPlugin.random.nextDouble()));
     }
 
     public World createEndWorld() {

@@ -23,18 +23,33 @@ public class EndPlugin extends JavaPlugin {
 
     private static EndPlugin instance;
 
-    private Storage storage;
-
-    private List<World> endWorlds;
-
-    private EndPortal portal;
-
     static {
         STARTUP_TIME = ManagementFactory.getRuntimeMXBean().getStartTime();
     }
 
+    private Storage storage;
+    private List<World> endWorlds;
+    private EndPortal portal;
+
     public static EndPlugin get() {
         return instance;
+    }
+
+    public static String generateWorldName() {
+        String uu = UUID.randomUUID().toString().substring(0, 8);
+        return "endworld_" + uu;
+    }
+
+    public static boolean isInEndWorld(Player player) {
+        return isEndWorld(player.getWorld());
+    }
+
+    public static boolean isEndWorld(World world) {
+        return world.getEnvironment() == World.Environment.THE_END;
+    }
+
+    public static boolean isInOverworld(Player player) {
+        return player.getWorld().getEnvironment() == World.Environment.NORMAL;
     }
 
     @Override
@@ -117,23 +132,6 @@ public class EndPlugin extends JavaPlugin {
         }
 
         return portalLocation;
-    }
-
-    public static String generateWorldName() {
-        String uu = UUID.randomUUID().toString().substring(0, 8);
-        return "endworld_" + uu;
-    }
-
-    public static boolean isInEndWorld(Player player) {
-        return isEndWorld(player.getWorld());
-    }
-
-    public static boolean isEndWorld(World world) {
-        return world.getEnvironment() == World.Environment.THE_END;
-    }
-
-    public static boolean isInOverworld(Player player) {
-        return player.getWorld().getEnvironment() == World.Environment.NORMAL;
     }
 
 }

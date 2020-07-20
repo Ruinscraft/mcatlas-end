@@ -201,7 +201,7 @@ public class MySQLStorage implements SQLStorage {
 
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement(query_portals);
-                        ResultSet rs = statement.executeQuery()) {
+                     ResultSet rs = statement.executeQuery()) {
                     while (rs.next()) {
                         String worldName = rs.getString("world_name");
                         int x = rs.getInt("x");
