@@ -28,7 +28,7 @@ public class EventListener implements Listener {
         Location fromLocation = event.getFrom();
         World from = fromLocation.getWorld();
 
-        if (to.getName().equals(from.getName())) {
+        if (to.equals(from)) {
             return;
         }
 
