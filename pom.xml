@@ -12,7 +12,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <mainClass>net.mcatlas.end.EndPlugin</mainClass>
-        <jar.finalName>${project.name}-${project.version}</jar.finalName>
     </properties>
 
     <repositories>
@@ -39,26 +38,6 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <minimizeJar>true</minimizeJar>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <defaultGoal>package</defaultGoal>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -76,6 +55,7 @@
                 </excludes>
             </resource>
         </resources>
+        <finalName>${project.name}</finalName>
     </build>
 
 </project>
