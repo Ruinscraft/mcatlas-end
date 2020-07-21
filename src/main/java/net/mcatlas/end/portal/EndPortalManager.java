@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class EndPortalManager {
 
@@ -48,7 +49,8 @@ public class EndPortalManager {
         String worldId = UUID.randomUUID().toString().substring(0, 8);
         EndWorld endWorld = new EndWorld(worldId);
         Location randomLocation = WorldUtil.findUnclaimedLocation(portalWorld, xBound, zBound);
-        EndPortal endPortal = new EndPortal(endWorld, randomLocation, 0L);
+        long closeTime = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
+        EndPortal endPortal = new EndPortal(endWorld, randomLocation, closeTime);
 
         WorldUtil.generateEndWorld(worldId);
 

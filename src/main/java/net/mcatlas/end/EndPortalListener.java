@@ -54,9 +54,7 @@ public class EndPortalListener implements Listener {
         // coming from an End world
         if (WorldUtil.isEndWorld(prevWorld)) {
             endPlugin.getEndStorage().deleteEndPlayerLogouts(player.getUniqueId());
-        }
-
-        else if (WorldUtil.isEndWorld(nextWorld)) {
+        } else if (WorldUtil.isEndWorld(nextWorld)) {
             EndPortal currentPortal = endPlugin.getEndPortalManager().getCurrent();
 
             // cancel if no portal, portal isnt open, player teleported to an end world the portal doesnt lead to
