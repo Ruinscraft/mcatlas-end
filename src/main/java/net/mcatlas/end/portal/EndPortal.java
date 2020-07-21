@@ -1,23 +1,23 @@
 package net.mcatlas.end.portal;
 
-import org.bukkit.World;
+import net.mcatlas.end.EndWorld;
 
 public class EndPortal {
 
-    private World end;
+    private EndWorld endWorld;
     private int x;
     private int z;
-    private long closingTime;
+    private long closeTime;
 
-    public EndPortal(World end, int x, int z, long closingTime) {
-        this.end = end;
+    public EndPortal(EndWorld endWorld, int x, int z, long closeTime) {
+        this.endWorld = endWorld;
         this.x = x;
         this.z = z;
-        this.closingTime = closingTime;
+        this.closeTime = closeTime;
     }
 
-    public World getEnd() {
-        return end;
+    public EndWorld getEndWorld() {
+        return endWorld;
     }
 
     public int getX() {
@@ -28,12 +28,12 @@ public class EndPortal {
         return z;
     }
 
-    public long getClosingTime() {
-        return closingTime;
+    public long getCloseTime() {
+        return closeTime;
     }
 
     public boolean isOpen() {
-        return closingTime > System.currentTimeMillis();
+        return closeTime > System.currentTimeMillis();
     }
 
     public boolean isClosed() {

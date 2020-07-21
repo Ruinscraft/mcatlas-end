@@ -25,6 +25,10 @@ public class EndPortalManager {
         this.current = current;
     }
 
+    public boolean portalActive() {
+        return current != null && current.isOpen();
+    }
+
     public World getWorld() {
         return world;
     }

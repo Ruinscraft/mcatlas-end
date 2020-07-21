@@ -18,9 +18,11 @@ public class EndPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+
         setupEndStorage();
         setupEndPortalManager();
-        getServer().getPluginManager().registerEvents(new EventListener(this), this);
+
+        getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
 
         // update current portal from db if it exists

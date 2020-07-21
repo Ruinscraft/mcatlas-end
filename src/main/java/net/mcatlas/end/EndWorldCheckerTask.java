@@ -22,6 +22,20 @@ public class EndWorldCheckerTask implements Runnable {
         nextCreationTime = newCreationTime();
     }
 
+    private static void deleteWorld(World world) {
+        Bukkit.unloadWorld(world, false);
+
+        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+
+        if (folder.exists()) {
+            folder.delete();
+        }
+    }
+
+    public static long newCreationTime() {
+        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
+    }
+
     @Override
     public void run() {
         checkEndCreate();
@@ -72,20 +86,6 @@ public class EndWorldCheckerTask implements Runnable {
                 });
             }
         }
-    }
-
-    private static void deleteWorld(World world) {
-        Bukkit.unloadWorld(world, false);
-
-        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
-
-        if (folder.exists()) {
-            folder.delete();
-        }
-    }
-
-    public static long newCreationTime() {
-        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 
 }

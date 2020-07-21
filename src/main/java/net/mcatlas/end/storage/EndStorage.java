@@ -1,39 +1,39 @@
 package net.mcatlas.end.storage;
 
+import net.mcatlas.end.EndPlayerLogout;
+import net.mcatlas.end.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface EndStorage {
 
-    // put logout time of player for world on logout
-    CompletableFuture<Void> savePlayer(Player player, long logoutTime);
+    /*
+     *  End Worlds
+     */
+    CompletableFuture<Void> saveEndWorld(EndWorld endWorld);
 
-    // update logout time
-    CompletableFuture<Void> updatePlayer(Player player, long logoutTime);
+    CompletableFuture<List<EndWorld>> queryEndWorlds();
 
-    // remove player entry on world leave
-    CompletableFuture<Void> deletePlayer(Player player);
+    CompletableFuture<EndWorld> queryEndWorld(String id);
 
-    // get players in world
-    CompletableFuture<Map<UUID, Long>> getPlayers(World world);
+    /*
+     *  End Portals
+     */
+    CompletableFuture<Void> saveEndPortal(EndPortal endPortal);
 
-    // remove all entries for world on world deletion
-    CompletableFuture<Void> deletePlayers(World world);
+    CompletableFuture<List<EndPortal>> queryEndPortals();
 
-    // put world in world table on creation
-    CompletableFuture<Void> saveWorld(World world, long creationTime);
-    // add stats on server shutdown and on world deletion?
+    /*
+     *  End Player Logouts
+     */
+    CompletableFuture<Void> saveEndPlayerLogout(EndPlayerLogout endPlayerLogout);
 
-    // put portal
-    CompletableFuture<Void> savePortal(EndPortal endPortal);
+    CompletableFuture<List<EndPlayerLogout>> queryEndPlayerLogouts();
 
-    // get portal list
-    CompletableFuture<List<EndPortal>> getPortals();
+    CompletableFuture<List<EndPlayerLogout>> queryEndPlayerLogouts(EndWorld endWorld);
+
+    CompletableFuture<Void> deleteEndPlayerLogouts(EndWorld endWorld);
 
 }

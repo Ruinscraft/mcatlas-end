@@ -1,6 +1,7 @@
 package net.mcatlas.end;
 
 import net.mcatlas.end.portal.EndPortal;
+import net.mcatlas.end.portal.EndPortalManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -9,11 +10,11 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-public class EventListener implements Listener {
+public class EndPortalListener implements Listener {
 
     private EndPlugin endPlugin;
 
-    public EventListener(EndPlugin endPlugin) {
+    public EndPortalListener(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
     }
 
@@ -52,18 +53,21 @@ public class EventListener implements Listener {
         }
     }
 
-    public void onPlayerMove(PlayerMoveEvent event) {
+    public void checkForEndPortal(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+        EndPortalManager endPortalManager = endPlugin.getEndPortalManager();
 
-        if (!WorldUtil.isInOverworld(player)) {
+        // if not in the world where portals are active
+        if (!player.getWorld().equals(endPortalManager.getWorld())) {
             return;
         }
 
-        EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
-
-        if (portal == null || !portal.isOpen()) {
+        // if there's no portal active
+        if (!endPortalManager.portalActive()) {
             return;
         }
+
+        EndPortal portal = endPortalManager.getCurrent();
 
         // teleport to current end world if close to portal
         Location location = new Location(player.getWorld(), portal.getX(), player.getLocation().getY(), portal.getZ());
