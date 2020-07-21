@@ -46,7 +46,7 @@ public class EndWorldCheckerTask implements Runnable {
         });
     }
 
-    private void checkLoadEndWorlds() {
+    public void checkLoadEndWorlds() {
         List<String> endWorldFolders = new ArrayList<>();
 
         for (File file : Bukkit.getWorldContainer().listFiles()) {
@@ -66,9 +66,11 @@ public class EndWorldCheckerTask implements Runnable {
             endPlugin.getEndStorage().queryEndWorld(worldId).thenAccept(result -> {
                 if (result != null) {
                     if (!result.isDeleted()) {
-                        WorldUtil.createEndWorld(worldId);
+                        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+                            WorldUtil.createEndWorld(worldId);
 
-                        endPlugin.getLogger().info("Loaded world: " + endWorldFolder);
+                            endPlugin.getLogger().info("Loaded world: " + endWorldFolder);
+                        });
                     }
                 }
             });
@@ -81,8 +83,11 @@ public class EndWorldCheckerTask implements Runnable {
             }
 
             if (!endWorldFolders.contains(world.getWorldFolder().getName())) {
-                Bukkit.unloadWorld(world, false);
-                endPlugin.getLogger().info("Unloaded deleted end world: " + world.getName());
+                endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+                    Bukkit.unloadWorld(world, false);
+                    
+                    endPlugin.getLogger().info("Unloaded deleted end world: " + world.getName());
+                });
             }
         }
     }
