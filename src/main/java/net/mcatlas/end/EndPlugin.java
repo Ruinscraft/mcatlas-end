@@ -7,14 +7,13 @@ import net.mcatlas.end.storage.MySQLEndStorage;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EndPlugin extends JavaPlugin {
 
     private EndStorage endStorage;
     private EndPortalManager endPortalManager;
-    private List<World> endWorlds;
 
     @Override
     public void onEnable() {
@@ -24,8 +23,6 @@ public class EndPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EventListener(), this);
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
 
-        endWorlds = getCurrentEndWorlds();
-
         // update current portal from db if it exists
         endStorage.getPortals().thenAccept(portals -> {
             for (EndPortal portal : portals) {
@@ -34,11 +31,6 @@ public class EndPlugin extends JavaPlugin {
                 }
             }
         });
-    }
-
-    @Override
-    public void onDisable() {
-
     }
 
     public EndStorage getEndStorage() {
@@ -73,16 +65,11 @@ public class EndPlugin extends JavaPlugin {
         endPortalManager = new EndPortalManager(portalWorld, xBound, zBound);
     }
 
-    public List<World> getCurrentEndWorlds() {
-        List<World> worlds = new ArrayList<>();
-
-        for (World world : this.getServer().getWorlds()) {
-            if (world.getEnvironment() == World.Environment.THE_END) {
-                worlds.add(world);
-            }
-        }
-
-        return worlds;
+    public List<World> getEndWorlds() {
+        return getServer().getWorlds()
+                .stream()
+                .filter(w -> w.getEnvironment() == World.Environment.THE_END)
+                .collect(Collectors.toList());
     }
 
 }

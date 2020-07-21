@@ -13,27 +13,13 @@ public class EndWorldCheckerTask implements Runnable {
     private static final long DAY_LENGTH = 86400000;
     private static final long DAY_HALF_LENGTH = DAY_LENGTH / 2;
     private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
-    private static final long PORTAL_TIME_OPEN_LENGTH = 3600000;
 
-    private long nextCreationTime = newCreationTime();
     private EndPlugin endPlugin;
+    private long nextCreationTime;
 
     public EndWorldCheckerTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
-    }
-
-    private static void deleteWorld(World world) {
-        Bukkit.unloadWorld(world, false);
-
-        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
-
-        if (folder.exists()) {
-            folder.delete();
-        }
-    }
-
-    public static long newCreationTime() {
-        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
+        nextCreationTime = newCreationTime();
     }
 
     @Override
@@ -55,21 +41,21 @@ public class EndWorldCheckerTask implements Runnable {
     }
 
     public void checkEndDelete() {
-        for (World world : endPlugin.getCurrentEndWorlds()) {
+        EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
+
+        if (portal == null) {
+            return;
+        }
+
+        for (World world : endPlugin.getEndWorlds()) {
             int playerCount = world.getPlayers().size();
 
             if (playerCount > 0) {
-                continue;
+                continue; // there are players currently in the end world
             }
 
-            EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
-
-            if (portal != null) {
-                // if closed or not the same end world
-                if (portal.isClosed() || !portal.getEnd().equals(world)) {
-                    deleteWorld(world);
-                }
-
+            // check if portal is closed or if old end world
+            if (portal.isClosed() || !world.equals(portal.getEnd())) {
                 endPlugin.getEndStorage().getPlayers(world).thenAccept(result -> {
                     boolean delete = true;
                     long currentTime = System.currentTimeMillis();
@@ -86,6 +72,20 @@ public class EndWorldCheckerTask implements Runnable {
                 });
             }
         }
+    }
+
+    private static void deleteWorld(World world) {
+        Bukkit.unloadWorld(world, false);
+
+        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+
+        if (folder.exists()) {
+            folder.delete();
+        }
+    }
+
+    public static long newCreationTime() {
+        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 
 }

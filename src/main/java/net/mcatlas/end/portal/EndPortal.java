@@ -29,11 +29,11 @@ public class EndPortal {
     }
 
     public long getClosingTime() {
-        return this.closingTime;
+        return closingTime;
     }
 
     public boolean isOpen() {
-        return this.closingTime > System.currentTimeMillis();
+        return closingTime > System.currentTimeMillis();
     }
 
     public boolean isClosed() {
