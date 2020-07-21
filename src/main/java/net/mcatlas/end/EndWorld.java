@@ -41,6 +41,8 @@ public class EndWorld {
     }
 
     public Optional<World> findBukkitWorld() {
+        System.out.println(Bukkit.getWorlds());
+
         return Bukkit.getWorlds().stream().filter(w -> w.getName().contains(id)).findFirst();
     }
 

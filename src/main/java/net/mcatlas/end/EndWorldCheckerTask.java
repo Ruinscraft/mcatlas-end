@@ -5,6 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class EndWorldCheckerTask implements Runnable {
@@ -31,6 +33,7 @@ public class EndWorldCheckerTask implements Runnable {
         updateCurrentPortal();
         checkEndCreate();
         checkEndDelete();
+        checkLoadEndWorlds();
     }
 
     private void updateCurrentPortal() {
@@ -41,6 +44,47 @@ public class EndWorldCheckerTask implements Runnable {
                 }
             }
         });
+    }
+
+    private void checkLoadEndWorlds() {
+        List<String> endWorldFolders = new ArrayList<>();
+
+        for (File file : Bukkit.getWorldContainer().listFiles()) {
+            if (!file.isDirectory()) {
+                continue;
+            }
+
+            if (file.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
+                endWorldFolders.add(file.getName());
+            }
+        }
+
+        // check for worlds to load
+        for (String endWorldFolder : endWorldFolders) {
+            String worldId = endWorldFolder.replace(WorldUtil.END_WORLD_PREFIX, "");
+
+            endPlugin.getEndStorage().queryEndWorld(worldId).thenAccept(result -> {
+                if (result != null) {
+                    if (!result.isDeleted()) {
+                        WorldUtil.createEndWorld(worldId);
+
+                        endPlugin.getLogger().info("Loaded world: " + endWorldFolder);
+                    }
+                }
+            });
+        }
+
+        // check for worlds to unload
+        for (World world : Bukkit.getWorlds()) {
+            if (!world.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
+                continue; // not an end world
+            }
+
+            if (!endWorldFolders.contains(world.getWorldFolder().getName())) {
+                Bukkit.unloadWorld(world, false);
+                endPlugin.getLogger().info("Unloaded deleted end world: " + world.getName());
+            }
+        }
     }
 
     private void checkEndCreate() {

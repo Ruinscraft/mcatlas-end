@@ -94,6 +94,8 @@ public class EndPortalListener implements Listener {
         Location location = new Location(player.getWorld(), portal.getX(), player.getLocation().getY(), portal.getZ());
         double dist = location.distanceSquared(player.getLocation());
 
+        System.out.println(dist);
+
         if (dist < 36) { // 6 blocks
             portal.getEndWorld().findBukkitWorld().ifPresent(endBukkitWorld -> {
                 player.teleport(endBukkitWorld.getSpawnLocation());

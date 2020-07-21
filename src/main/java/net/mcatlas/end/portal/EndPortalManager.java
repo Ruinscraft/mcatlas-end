@@ -55,8 +55,8 @@ public class EndPortalManager {
         long closeTime = System.currentTimeMillis() + openTimeMillis;
         EndPortal endPortal = new EndPortal(endWorld, location, closeTime);
 
-        // generate world
-        WorldUtil.generateEndWorld(worldId);
+        // create world
+        WorldUtil.createEndWorld(worldId);
 
         // save new world then the new portal to storage
         endStorage.saveEndWorld(endWorld).thenRun(() -> endStorage.saveEndPortal(endPortal));

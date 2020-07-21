@@ -89,10 +89,12 @@ public class MySQLEndStorage implements EndStorage {
                     query.setString(1, id);
 
                     try (ResultSet result = query.executeQuery()) {
-                        long createdTime = result.getLong("created_time");
-                        long deletedTime = result.getLong("deleted_time");
+                        while (result.next()) {
+                            long createdTime = result.getLong("created_time");
+                            long deletedTime = result.getLong("deleted_time");
 
-                        return new EndWorld(id, createdTime, deletedTime);
+                            return new EndWorld(id, createdTime, deletedTime);
+                        }
                     }
                 }
             } catch (SQLException e) {
