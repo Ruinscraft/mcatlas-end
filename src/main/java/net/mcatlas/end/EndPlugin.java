@@ -21,8 +21,10 @@ public class EndPlugin extends JavaPlugin {
         setupEndPortalManager();
 
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
-        getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
-        getServer().getScheduler().runTaskTimer(this, new EndPortalEffectsTask(this), 20 * 5, 2);
+        getServer().getScheduler().runTaskTimer(this,
+                new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
+        getServer().getScheduler().runTaskTimerAsynchronously(this,
+                new EndPortalEffectsTask(this), 20 * 5, 2);
 
         // update current portal from db if it exists
         endStorage.queryEndPortals().thenAccept(portals -> {
