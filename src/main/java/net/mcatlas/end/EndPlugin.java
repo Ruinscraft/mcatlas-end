@@ -20,8 +20,24 @@ public class EndPlugin extends JavaPlugin {
         setupEndStorage();
 
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
+<<<<<<< HEAD
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
         getServer().getScheduler().runTaskTimer(this, new EndPortalEffectsTask(this), 20 * 5, 2);
+=======
+        getServer().getScheduler().runTaskTimer(this,
+                new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
+        getServer().getScheduler().runTaskTimerAsynchronously(this,
+                new EndPortalEffectsTask(this), 20 * 5, 2);
+
+        // update current portal from db if it exists
+        endStorage.queryEndPortals().thenAccept(portals -> {
+            for (EndPortal portal : portals) {
+                if (portal.isOpen()) {
+                    endPortalManager.setCurrent(portal);
+                }
+            }
+        });
+>>>>>>> a6e2b950de2e53321429f26f78b9b6fcfe401970
     }
 
     public EndStorage getEndStorage() {
