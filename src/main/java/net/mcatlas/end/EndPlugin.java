@@ -74,8 +74,6 @@ public class EndPlugin extends JavaPlugin {
     private void setupEndWorldCheckerTask() {
         endWorldCheckerTask = new EndWorldCheckerTask(this);
 
-        endWorldCheckerTask.checkLoadEndWorlds();
-
         getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS / 60, MINUTE_IN_TICKS);
     }
 

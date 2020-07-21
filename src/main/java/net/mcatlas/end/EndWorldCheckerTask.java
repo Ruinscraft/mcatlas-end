@@ -85,7 +85,7 @@ public class EndWorldCheckerTask implements Runnable {
             if (!endWorldFolders.contains(world.getWorldFolder().getName())) {
                 endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
                     Bukkit.unloadWorld(world, false);
-                    
+
                     endPlugin.getLogger().info("Unloaded deleted end world: " + world.getName());
                 });
             }
