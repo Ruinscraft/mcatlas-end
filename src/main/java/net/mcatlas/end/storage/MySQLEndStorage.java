@@ -3,6 +3,7 @@ package net.mcatlas.end.storage;
 import net.mcatlas.end.EndPlayerLogout;
 import net.mcatlas.end.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
+import net.mcatlas.end.portal.EndPortalManager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class MySQLEndStorage implements EndStorage {
     private String username;
     private String password;
 
-    public MySQLEndStorage(String host, int port, String database, String username, String password) {
+    public MySQLEndStorage(String host, int port, String database, String username, String password, EndPortalManager endPortalManager) {
         this.host = host;
         this.port = port;
         this.database = database;
@@ -35,6 +36,14 @@ public class MySQLEndStorage implements EndStorage {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }).thenRun(() -> {
+            queryEndPortals().thenAccept(portals -> {
+                for (EndPortal portal : portals) {
+                    if (portal.isOpen()) {
+                        endPortalManager.setCurrent(portal);
+                    }
+                }
+            });
         });
     }
 

@@ -1,6 +1,5 @@
 package net.mcatlas.end;
 
-import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalEffectsTask;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.storage.EndStorage;
@@ -17,21 +16,12 @@ public class EndPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        setupEndStorage();
         setupEndPortalManager();
+        setupEndStorage();
 
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
         getServer().getScheduler().runTaskTimer(this, new EndPortalEffectsTask(this), 20 * 5, 2);
-
-        // update current portal from db if it exists
-        endStorage.queryEndPortals().thenAccept(portals -> {
-            for (EndPortal portal : portals) {
-                if (portal.isOpen()) {
-                    endPortalManager.setCurrent(portal);
-                }
-            }
-        });
     }
 
     public EndStorage getEndStorage() {
@@ -49,7 +39,7 @@ public class EndPlugin extends JavaPlugin {
         String username = getConfig().getString("storage.mysql.username");
         String password = getConfig().getString("storage.mysql.password");
 
-        endStorage = new MySQLEndStorage(host, port, database, username, password);
+        endStorage = new MySQLEndStorage(host, port, database, username, password, endPortalManager);
     }
 
     private void setupEndPortalManager() {
