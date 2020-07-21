@@ -38,11 +38,22 @@ public class EndWorldCheckerTask implements Runnable {
 
     @Override
     public void run() {
+        updateEndPortalManagerActivePortal();
         checkEndCreate();
         checkEndDelete();
     }
 
-    public void checkEndCreate() {
+    private void updateEndPortalManagerActivePortal() {
+        endPlugin.getEndStorage().queryEndPortals().thenAccept(portals -> {
+            for (EndPortal portal : portals) {
+                if (portal.isOpen()) {
+                    endPlugin.getEndPortalManager().setCurrent(portal);
+                }
+            }
+        });
+    }
+
+    private void checkEndCreate() {
         if (System.currentTimeMillis() > nextCreationTime) {
             Bukkit.getLogger().info("Creating new end world");
 
@@ -54,7 +65,7 @@ public class EndWorldCheckerTask implements Runnable {
         }
     }
 
-    public void checkEndDelete() {
+    private void checkEndDelete() {
         EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
 
         if (portal == null) {

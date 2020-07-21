@@ -39,7 +39,7 @@ public class EndPlugin extends JavaPlugin {
         String username = getConfig().getString("storage.mysql.username");
         String password = getConfig().getString("storage.mysql.password");
 
-        endStorage = new MySQLEndStorage(host, port, database, username, password, endPortalManager);
+        endStorage = new MySQLEndStorage(host, port, database, username, password);
     }
 
     private void setupEndPortalManager() {
