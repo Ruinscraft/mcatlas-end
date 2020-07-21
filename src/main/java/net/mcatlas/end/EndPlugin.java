@@ -23,7 +23,7 @@ public class EndPlugin extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
         getServer().getScheduler().runTaskTimerAsynchronously(this, new EndPortalEffectsTask(this), 20 * 5, 2);
 
-        getCommand("endportal").setExecutor(new EndPortalCommand());
+        getCommand("endportal").setExecutor(new EndPortalCommand(this));
     }
 
     public EndStorage getEndStorage() {
