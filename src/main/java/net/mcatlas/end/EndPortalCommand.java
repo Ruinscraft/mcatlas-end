@@ -4,9 +4,12 @@ import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalManager;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class EndPortalCommand implements CommandExecutor {
 
@@ -18,14 +21,21 @@ public class EndPortalCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
+        if (args.length > 0) {
+            String subCmd = args[0].toLowerCase();
+
+            switch (subCmd) {
+                case "create":
+                case "createhere":
+                    createEndPortal(sender, subCmd);
+                    break;
+                default:
+                    showValidArgs(sender);
+                    break;
+            }
+        } else {
             showEndPortalInfo(sender);
-            return true;
         }
-
-
-
-
 
         return true;
     }
@@ -46,7 +56,48 @@ public class EndPortalCommand implements CommandExecutor {
         }
     }
 
-    private String timeUntil(long then) {
+    private void createEndPortal(CommandSender sender, String label) {
+        if (endPlugin.getEndPortalManager().portalActive()) {
+            sender.sendMessage(ChatColor.RED + "There is an active portal. A new one cannot be created.");
+            return;
+        }
+
+        Location location = null;
+
+        if (label.equals("create")) {
+            World portalWorld = endPlugin.getEndPortalManager().getPortalWorld();
+            int xBound = endPlugin.getEndPortalManager().getxBound();
+            int zBound = endPlugin.getEndPortalManager().getzBound();
+
+            location = WorldUtil.findUnclaimedLocation(portalWorld, xBound, zBound);
+        }
+
+        else if (label.equals("createhere")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "You must be a Player to run this.");
+                return;
+            }
+
+            location = ((Player) sender).getLocation();
+        }
+
+        if (location == null) {
+            sender.sendMessage(ChatColor.RED + "Invalid location.");
+            return;
+        }
+
+        EndPortal endPortal = endPlugin.getEndPortalManager().createRandom();
+
+        endPlugin.getEndStorage().saveEndPortal(endPortal);
+
+        sender.sendMessage(ChatColor.GOLD + "Portal created @ (X,Z) " + endPortal.getX() + "," + endPortal.getZ());
+    }
+
+    private void showValidArgs(CommandSender sender) {
+        sender.sendMessage(ChatColor.RED + "Valid arguments [create, createhere]");
+    }
+
+    private static String timeUntil(long then) {
         long now = System.currentTimeMillis();
         long diff = then - now;
 

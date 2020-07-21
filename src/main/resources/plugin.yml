@@ -3,6 +3,7 @@ name: ${name}
 version: ${version}
 api-version: 1.13
 authors: [StupidDrew9, royalkingkb]
+depend: [Towny]
 commands:
   endportal:
     permission: Manage End Portals
