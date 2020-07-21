@@ -233,6 +233,20 @@ public class MySQLEndStorage implements EndStorage {
         });
     }
 
+    @Override
+    public CompletableFuture<Void> deleteEndPlayerLogouts(UUID mojangId) {
+        return CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement delete = connection.prepareStatement("DELETE FROM end_player_logouts WHERE mojang_uuid = ?;")) {
+                    delete.setString(1, mojangId.toString());
+                    delete.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private Connection getConnection() {
         String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database;
 

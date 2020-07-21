@@ -7,9 +7,6 @@ import net.mcatlas.end.storage.MySQLEndStorage;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class EndPlugin extends JavaPlugin {
 
     private EndStorage endStorage;
@@ -26,7 +23,7 @@ public class EndPlugin extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
 
         // update current portal from db if it exists
-        endStorage.getPortals().thenAccept(portals -> {
+        endStorage.queryEndPortals().thenAccept(portals -> {
             for (EndPortal portal : portals) {
                 if (portal.isOpen()) {
                     endPortalManager.setCurrent(portal);
@@ -65,13 +62,6 @@ public class EndPlugin extends JavaPlugin {
         }
 
         endPortalManager = new EndPortalManager(portalWorld, xBound, zBound);
-    }
-
-    public List<World> getEndWorlds() {
-        return getServer().getWorlds()
-                .stream()
-                .filter(w -> w.getEnvironment() == World.Environment.THE_END)
-                .collect(Collectors.toList());
     }
 
 }

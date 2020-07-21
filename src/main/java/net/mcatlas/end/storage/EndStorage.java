@@ -5,6 +5,7 @@ import net.mcatlas.end.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface EndStorage {
@@ -35,5 +36,7 @@ public interface EndStorage {
     CompletableFuture<List<EndPlayerLogout>> queryEndPlayerLogouts(EndWorld endWorld);
 
     CompletableFuture<Void> deleteEndPlayerLogouts(EndWorld endWorld);
+
+    CompletableFuture<Void> deleteEndPlayerLogouts(UUID mojangId);
 
 }

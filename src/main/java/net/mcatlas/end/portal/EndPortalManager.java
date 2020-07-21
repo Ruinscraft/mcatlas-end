@@ -1,18 +1,21 @@
 package net.mcatlas.end.portal;
 
+import net.mcatlas.end.EndWorld;
 import net.mcatlas.end.WorldUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.util.UUID;
+
 public class EndPortalManager {
 
     private EndPortal current;
-    private World world;
+    private World portalWorld;
     private int xBound;
     private int zBound;
 
-    public EndPortalManager(World world, int xBound, int zBound) {
-        this.world = world;
+    public EndPortalManager(World portalWorld, int xBound, int zBound) {
+        this.portalWorld = portalWorld;
         this.xBound = xBound;
         this.zBound = zBound;
     }
@@ -29,8 +32,8 @@ public class EndPortalManager {
         return current != null && current.isOpen();
     }
 
-    public World getWorld() {
-        return world;
+    public World getPortalWorld() {
+        return portalWorld;
     }
 
     public int getxBound() {
@@ -42,12 +45,14 @@ public class EndPortalManager {
     }
 
     public EndPortal createRandom() {
-        World end = WorldUtil.createEndWorld();
-        Location location = WorldUtil.findUnclaimedLocation(world, xBound, zBound);
-        long closingTime = 0;
-        EndPortal portal = new EndPortal(end, location.getBlockX(), location.getBlockZ(), closingTime);
+        String worldId = UUID.randomUUID().toString().substring(0, 8);
+        EndWorld endWorld = new EndWorld(worldId);
+        Location randomLocation = WorldUtil.findUnclaimedLocation(portalWorld, xBound, zBound);
+        EndPortal endPortal = new EndPortal(endWorld, randomLocation, 0L);
 
-        return current = portal;
+        WorldUtil.generateEndWorld(worldId);
+
+        return current = endPortal;
     }
 
 }

@@ -1,6 +1,7 @@
 package net.mcatlas.end.portal;
 
 import net.mcatlas.end.EndWorld;
+import org.bukkit.Location;
 
 public class EndPortal {
 
@@ -14,6 +15,10 @@ public class EndPortal {
         this.x = x;
         this.z = z;
         this.closeTime = closeTime;
+    }
+
+    public EndPortal(EndWorld endWorld, Location location, long closeTime) {
+        this(endWorld, location.getBlockX(), location.getBlockZ(), closeTime);
     }
 
     public EndWorld getEndWorld() {

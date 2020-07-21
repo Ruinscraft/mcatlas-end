@@ -48,9 +48,9 @@ public class EndWorldCheckerTask implements Runnable {
 
             nextCreationTime = newCreationTime();
 
-            EndPortal portal = endPlugin.getEndPortalManager().createRandom();
+            EndPortal endPortal = endPlugin.getEndPortalManager().createRandom();
 
-            endPlugin.getEndStorage().savePortal(portal);
+            endPlugin.getEndStorage().saveEndPortal(endPortal);
         }
     }
 
@@ -61,31 +61,40 @@ public class EndWorldCheckerTask implements Runnable {
             return;
         }
 
-        for (World world : endPlugin.getEndWorlds()) {
-            int playerCount = world.getPlayers().size();
+        endPlugin.getEndStorage().queryEndWorlds().thenAccept(result -> {
+            for (EndWorld endWorld : result) {
+                if (endWorld.isDeleted()) {
+                    continue;
+                }
 
-            if (playerCount > 0) {
-                continue; // there are players currently in the end world
+                // Portal is open for the current EndWorld, continue on
+                if (portal.getEndWorld().equals(endWorld) && portal.isOpen()) {
+                    continue;
+                }
+
+                // An old end world that the Portal doesn't go to
+                else if (!portal.getEndWorld().equals(endWorld)) {
+                    checkPlayerLogouts(endWorld);
+                }
+            }
+        });
+    }
+
+    private void checkPlayerLogouts(EndWorld endWorld) {
+        endPlugin.getEndStorage().queryEndPlayerLogouts(endWorld).thenAccept(result -> {
+            boolean delete = true;
+            long currentTime = System.currentTimeMillis();
+
+            for (EndPlayerLogout logout : result) {
+                if (currentTime - logout.getLogoutTime() <= OFFLINE_BEFORE_DELETE_LENGTH) {
+                    delete = false; // someone has been in the world recent enough
+                }
             }
 
-            // check if portal is closed or if old end world
-            if (portal.isClosed() || !world.equals(portal.getEnd())) {
-                endPlugin.getEndStorage().getPlayers(world).thenAccept(result -> {
-                    boolean delete = true;
-                    long currentTime = System.currentTimeMillis();
-
-                    for (long lastTimeInWorld : result.values()) {
-                        if (currentTime - lastTimeInWorld <= OFFLINE_BEFORE_DELETE_LENGTH) {
-                            delete = false; // someone has been in the world recent enough
-                        }
-                    }
-
-                    if (delete) {
-                        deleteWorld(world);
-                    }
-                });
+            if (delete) {
+                deleteWorld(endWorld.findBukkitWorld().get());
             }
-        }
+        });
     }
 
 }
