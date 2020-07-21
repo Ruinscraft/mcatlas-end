@@ -2,6 +2,7 @@ package net.mcatlas.end;
 
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalManager;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,11 +39,22 @@ public class EndPortalCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.GOLD + "There is an active End Portal:");
             sender.sendMessage(ChatColor.GOLD + "Coordinates (X,Z): " + current.getX() + "," + current.getZ());
             sender.sendMessage(ChatColor.GOLD + "Associated End World ID: " + current.getEndWorld().getId());
-            sender.sendMessage(ChatColor.GOLD + "Close time: " + current.getCloseTime()); // TODO: format human readable
+            sender.sendMessage(ChatColor.GOLD + "Close time: " + timeUntil(current.getCloseTime()));
         } else {
             sender.sendMessage(ChatColor.GOLD + "There is currently no End Portal active.");
-            sender.sendMessage(ChatColor.GOLD + "Next scheduled End Portal opening: " + endPlugin.getEndWorldCheckerTask().getNextCreationTime()); // TODO: format human readable
+            sender.sendMessage(ChatColor.GOLD + "Next scheduled End Portal opening: " + timeUntil(endPlugin.getEndWorldCheckerTask().getNextCreationTime()));
         }
+    }
+
+    private String timeUntil(long then) {
+        long now = System.currentTimeMillis();
+        long diff = then - now;
+
+        if (diff < 0) {
+            return "?";
+        }
+
+        return DurationFormatUtils.formatDurationWords(diff, true, true) + " from now";
     }
 
 }
