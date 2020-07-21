@@ -20,7 +20,7 @@ public class EndPlugin extends JavaPlugin {
         saveDefaultConfig();
         setupEndStorage();
         setupEndPortalManager();
-        getServer().getPluginManager().registerEvents(new EventListener(), this);
+        getServer().getPluginManager().registerEvents(new EventListener(this), this);
         getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
 
         // update current portal from db if it exists

@@ -13,6 +13,10 @@ public class EventListener implements Listener {
 
     private EndPlugin endPlugin;
 
+    public EventListener(EndPlugin endPlugin) {
+        this.endPlugin = endPlugin;
+    }
+
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
