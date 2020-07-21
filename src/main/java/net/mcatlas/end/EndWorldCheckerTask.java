@@ -28,12 +28,12 @@ public class EndWorldCheckerTask implements Runnable {
 
     @Override
     public void run() {
-        updateEndPortalManagerActivePortal();
+        updateCurrentPortal();
         checkEndCreate();
         checkEndDelete();
     }
 
-    private void updateEndPortalManagerActivePortal() {
+    private void updateCurrentPortal() {
         endPlugin.getEndStorage().queryEndPortals().thenAccept(portals -> {
             for (EndPortal portal : portals) {
                 if (portal.isOpen()) {
@@ -49,9 +49,7 @@ public class EndWorldCheckerTask implements Runnable {
 
             nextCreationTime = generateNewTime();
 
-            EndPortal endPortal = endPlugin.getEndPortalManager().createRandom();
-
-            endPlugin.getEndStorage().saveEndPortal(endPortal);
+           endPlugin.getEndPortalManager().createRandom();
         }
     }
 

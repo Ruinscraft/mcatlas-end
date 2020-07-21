@@ -204,11 +204,13 @@ public class MySQLEndStorage implements EndStorage {
                     query.setString(1, endWorld.getId());
 
                     try (ResultSet result = query.executeQuery()) {
-                        UUID mojangId = UUID.fromString(result.getString("mojang_uuid"));
-                        long logoutTime = result.getLong("logout_time");
-                        EndPlayerLogout endPlayerLogout = new EndPlayerLogout(endWorld, mojangId, logoutTime);
+                        while (result.next()) {
+                            UUID mojangId = UUID.fromString(result.getString("mojang_uuid"));
+                            long logoutTime = result.getLong("logout_time");
+                            EndPlayerLogout endPlayerLogout = new EndPlayerLogout(endWorld, mojangId, logoutTime);
 
-                        endPlayerLogouts.add(endPlayerLogout);
+                            endPlayerLogouts.add(endPlayerLogout);
+                        }
                     }
                 }
             } catch (SQLException e) {

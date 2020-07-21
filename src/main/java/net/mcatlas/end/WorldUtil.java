@@ -21,10 +21,6 @@ public final class WorldUtil {
         return world.getEnvironment() == World.Environment.THE_END;
     }
 
-    public static boolean isInOverworld(Player player) {
-        return player.getWorld().getEnvironment() == World.Environment.NORMAL;
-    }
-
     public static Location findUnclaimedLocation(World world, int maxX, int maxZ) {
         int x = ((int) (maxX * RANDOM.nextDouble())) + (maxX / 2);
         int z = ((int) (maxZ * RANDOM.nextDouble())) + (maxX / 2);
@@ -32,7 +28,8 @@ public final class WorldUtil {
         Location location = new Location(world, x, 64, z);
         String townName = TownyAPI.getInstance().getTownName(location);
 
-        if (townName == null || townName.isEmpty()) {
+        // there was a town claim at the randomly chosen location
+        if (townName != null) {
             return findUnclaimedLocation(world, maxX, maxZ);
         }
 
@@ -40,12 +37,11 @@ public final class WorldUtil {
     }
 
     public static World generateEndWorld(String worldId) {
-        Random seedGen = new Random();
         WorldCreator worldCreator = WorldCreator.name(worldId);
 
         worldCreator.environment(World.Environment.THE_END);
         worldCreator.generateStructures(true);
-        worldCreator.seed(seedGen.nextLong());
+        worldCreator.seed(RANDOM.nextLong());
         worldCreator.type(WorldType.NORMAL);
 
         return worldCreator.createWorld();

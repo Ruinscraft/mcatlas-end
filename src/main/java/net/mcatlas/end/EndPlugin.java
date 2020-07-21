@@ -7,6 +7,8 @@ import net.mcatlas.end.storage.MySQLEndStorage;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.concurrent.TimeUnit;
+
 public class EndPlugin extends JavaPlugin {
 
     private static final long MINUTE_IN_TICKS = 20 * 60;
@@ -19,8 +21,8 @@ public class EndPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        setupEndPortalManager();
         setupEndStorage();
+        setupEndPortalManager();
         setupEndWorldCheckerTask();
 
         getServer().getScheduler().runTaskTimerAsynchronously(this, new EndPortalEffectsTask(this), 20 * 5, 2);
@@ -55,24 +57,24 @@ public class EndPlugin extends JavaPlugin {
     }
 
     private void setupEndPortalManager() {
-        int xBound = getConfig().getInt("portal-world.x-bound");
-        int zBound = getConfig().getInt("portal-world.z-bound");
-        String portalWorldName = getConfig().getString("portal-world.world");
+        int xBound = getConfig().getInt("portal-world.x-bound", 20000);
+        int zBound = getConfig().getInt("portal-world.z-bound", 20000);
+        String portalWorldName = getConfig().getString("portal-world.world", "world");
         World portalWorld = getServer().getWorld(portalWorldName);
-        long portalOpenTimeMillis = getConfig().getLong("portal-open-time-millis");
+        long portalOpenTimeMillis = getConfig().getLong("portal-open-time-millis", TimeUnit.HOURS.toMillis(1));
 
         if (portalWorld == null) {
             getLogger().warning("Portal world not found. Check the config.");
             return;
         }
 
-        endPortalManager = new EndPortalManager(portalWorld, xBound, zBound, portalOpenTimeMillis);
+        endPortalManager = new EndPortalManager(endStorage, portalWorld, xBound, zBound, portalOpenTimeMillis);
     }
 
     private void setupEndWorldCheckerTask() {
         endWorldCheckerTask = new EndWorldCheckerTask(this);
 
-        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS * 15, MINUTE_IN_TICKS);
+        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS / 60, MINUTE_IN_TICKS);
     }
 
 }

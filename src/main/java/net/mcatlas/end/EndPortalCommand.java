@@ -86,9 +86,7 @@ public class EndPortalCommand implements CommandExecutor {
             return;
         }
 
-        EndPortal endPortal = endPlugin.getEndPortalManager().createRandom();
-
-        endPlugin.getEndStorage().saveEndPortal(endPortal);
+        EndPortal endPortal = endPlugin.getEndPortalManager().create(location);
 
         sender.sendMessage(ChatColor.GOLD + "Portal created @ (X,Z) " + endPortal.getX() + "," + endPortal.getZ());
     }
