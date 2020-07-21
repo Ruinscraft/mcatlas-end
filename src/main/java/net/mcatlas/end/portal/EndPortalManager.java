@@ -4,11 +4,7 @@ import net.mcatlas.end.WorldUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.Random;
-
 public class EndPortalManager {
-
-    private static final Random RANDOM = new Random();
 
     private EndPortal current;
     private World world;
@@ -17,7 +13,8 @@ public class EndPortalManager {
 
     public EndPortalManager(World world, int xBound, int zBound) {
         this.world = world;
-        this.current = current;
+        this.xBound = xBound;
+        this.zBound = zBound;
     }
 
     public EndPortal getCurrent() {
@@ -26,6 +23,18 @@ public class EndPortalManager {
 
     public void setCurrent(EndPortal current) {
         this.current = current;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public int getxBound() {
+        return xBound;
+    }
+
+    public int getzBound() {
+        return zBound;
     }
 
     public EndPortal createRandom() {
