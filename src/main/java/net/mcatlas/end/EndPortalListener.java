@@ -5,6 +5,7 @@ import net.mcatlas.end.portal.EndPortalManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -18,6 +19,7 @@ public class EndPortalListener implements Listener {
         this.endPlugin = endPlugin;
     }
 
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
@@ -41,6 +43,7 @@ public class EndPortalListener implements Listener {
         }
     }
 
+    @EventHandler
     public void onPlayerChangeWorld(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         World nextWorld = player.getWorld();
@@ -70,6 +73,7 @@ public class EndPortalListener implements Listener {
         }
     }
 
+    @EventHandler
     public void checkForEndPortal(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         EndPortalManager endPortalManager = endPlugin.getEndPortalManager();
