@@ -2,6 +2,7 @@ portal-world:
   x-bound: 21503 # width
   z-bound: 10751 # height
   world: world
+  portal-open-time-millis: 3600000 # 1 hour
 
 storage:
   mysql:

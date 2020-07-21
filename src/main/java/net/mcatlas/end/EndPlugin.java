@@ -49,13 +49,14 @@ public class EndPlugin extends JavaPlugin {
         int zBound = getConfig().getInt("portal-world.z-bound");
         String portalWorldName = getConfig().getString("portal-world.world");
         World portalWorld = getServer().getWorld(portalWorldName);
+        long portalOpenTimeMillis = getConfig().getLong("portal-open-time-millis");
 
         if (portalWorld == null) {
             getLogger().warning("Portal world not found. Check the config.");
             return;
         }
 
-        endPortalManager = new EndPortalManager(portalWorld, xBound, zBound);
+        endPortalManager = new EndPortalManager(portalWorld, xBound, zBound, portalOpenTimeMillis);
     }
 
 }
