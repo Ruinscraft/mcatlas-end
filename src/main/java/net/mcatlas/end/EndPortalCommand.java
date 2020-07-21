@@ -40,7 +40,8 @@ public class EndPortalCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.GOLD + "Associated End World ID: " + current.getEndWorld().getId());
             sender.sendMessage(ChatColor.GOLD + "Close time: " + current.getCloseTime()); // TODO: format human readable
         } else {
-            sender.sendMessage(ChatColor.RED + "There is currently no End Portal active.");
+            sender.sendMessage(ChatColor.GOLD + "There is currently no End Portal active.");
+            sender.sendMessage(ChatColor.GOLD + "Next scheduled End Portal opening: " + endPlugin.getEndWorldCheckerTask().getNextCreationTime()); // TODO: format human readable
         }
     }
 

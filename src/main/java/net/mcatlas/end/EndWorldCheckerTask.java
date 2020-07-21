@@ -19,7 +19,11 @@ public class EndWorldCheckerTask implements Runnable {
 
     public EndWorldCheckerTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
-        nextCreationTime = newCreationTime();
+        nextCreationTime = generateNewTime();
+    }
+
+    public long getNextCreationTime() {
+        return nextCreationTime;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class EndWorldCheckerTask implements Runnable {
         if (System.currentTimeMillis() > nextCreationTime) {
             Bukkit.getLogger().info("Creating new end world");
 
-            nextCreationTime = newCreationTime();
+            nextCreationTime = generateNewTime();
 
             EndPortal endPortal = endPlugin.getEndPortalManager().createRandom();
 
@@ -104,7 +108,7 @@ public class EndWorldCheckerTask implements Runnable {
         }
     }
 
-    public static long newCreationTime() {
+    public static long generateNewTime() {
         return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
     }
 

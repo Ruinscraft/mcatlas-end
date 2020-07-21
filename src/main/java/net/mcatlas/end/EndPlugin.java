@@ -9,8 +9,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class EndPlugin extends JavaPlugin {
 
+    private static final long MINUTE_IN_TICKS = 20 * 60;
+
     private EndStorage endStorage;
     private EndPortalManager endPortalManager;
+    private EndWorldCheckerTask endWorldCheckerTask;
 
     @Override
     public void onEnable() {
@@ -18,11 +21,14 @@ public class EndPlugin extends JavaPlugin {
 
         setupEndPortalManager();
         setupEndStorage();
+        setupEndWorldCheckerTask();
 
-        getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
-        getServer().getScheduler().runTaskTimer(this, new EndWorldCheckerTask(this), 20 * 60 * 15, 20 * 60);
         getServer().getScheduler().runTaskTimerAsynchronously(this, new EndPortalEffectsTask(this), 20 * 5, 2);
 
+        // Register listeners
+        getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
+
+        // Register commands
         getCommand("endportal").setExecutor(new EndPortalCommand(this));
     }
 
@@ -32,6 +38,10 @@ public class EndPlugin extends JavaPlugin {
 
     public EndPortalManager getEndPortalManager() {
         return endPortalManager;
+    }
+
+    public EndWorldCheckerTask getEndWorldCheckerTask() {
+        return endWorldCheckerTask;
     }
 
     private void setupEndStorage() {
@@ -57,6 +67,12 @@ public class EndPlugin extends JavaPlugin {
         }
 
         endPortalManager = new EndPortalManager(portalWorld, xBound, zBound, portalOpenTimeMillis);
+    }
+
+    private void setupEndWorldCheckerTask() {
+        endWorldCheckerTask = new EndWorldCheckerTask(this);
+
+        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS * 15, MINUTE_IN_TICKS);
     }
 
 }
