@@ -5,6 +5,7 @@ import net.mcatlas.end.WorldUtil;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.Random;
 import java.util.UUID;
@@ -84,6 +85,22 @@ public class EndPortalManager {
         Location location = WorldUtil.findUnclaimedLocation(portalWorld, xBound, zBound);
 
         return create(endPlugin, location);
+    }
+
+    public boolean isInPortal(Player player) {
+        if (!portalActive()) {
+            return false;
+        }
+
+        // teleport to current end world if close to portal
+        Location location = new Location(player.getWorld(), current.getX(), player.getLocation().getY(), current.getZ());
+        double dist = location.distanceSquared(player.getLocation());
+
+        if (dist < 36) { // 6 blocks
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static long getNextPortalTime() {

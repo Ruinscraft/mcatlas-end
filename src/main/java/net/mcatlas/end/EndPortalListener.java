@@ -4,12 +4,12 @@ import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -19,6 +19,11 @@ public class EndPortalListener implements Listener {
 
     public EndPortalListener(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
+    }
+
+    @EventHandler // this handles the vanilla End Portals (end world->over world)
+    public void onEndPortalEnter(PlayerPortalEvent event) {
+
     }
 
     @EventHandler
@@ -85,19 +90,10 @@ public class EndPortalListener implements Listener {
             return;
         }
 
-        // if there's no portal active
-        if (!endPortalManager.portalActive()) {
-            return;
-        }
+        if (endPortalManager.isInPortal(player)) {
+            EndPortal endPortal = endPortalManager.getCurrent();
 
-        EndPortal portal = endPortalManager.getCurrent();
-
-        // teleport to current end world if close to portal
-        Location location = new Location(player.getWorld(), portal.getX(), player.getLocation().getY(), portal.getZ());
-        double dist = location.distanceSquared(player.getLocation());
-
-        if (dist < 36) { // 6 blocks
-            portal.getEndWorld().findBukkitWorld().ifPresent(endBukkitWorld -> {
+            endPortal.getEndWorld().findBukkitWorld().ifPresent(endBukkitWorld -> {
                 player.teleport(endBukkitWorld.getSpawnLocation());
             });
         }
