@@ -4,7 +4,9 @@ import net.mcatlas.end.portal.EndPortalEffectsTask;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.storage.EndStorage;
 import net.mcatlas.end.storage.MySQLEndStorage;
+import net.mcatlas.end.world.EndWorld;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.concurrent.TimeUnit;
@@ -32,6 +34,28 @@ public class EndPlugin extends JavaPlugin {
 
         // Register commands
         getCommand("endportal").setExecutor(new EndPortalCommand(this));
+    }
+
+    @Override
+    public void onDisable() {
+        // Save any players that were in End Worlds to end_player_logouts
+        for (World world : WorldUtil.getBukkitEndWorlds()) {
+            String worldId = world.getName().replace(EndWorld.END_WORLD_PREFIX, "");
+
+            endStorage.queryEndWorld(worldId).thenAccept(o -> {
+               o.ifPresent(endWorld -> {
+                   if (endWorld.isDeleted()) {
+                       return;
+                   }
+
+                   for (Player player : world.getPlayers()) {
+                       EndPlayerLogout endPlayerLogout = new EndPlayerLogout(endWorld, player.getUniqueId(), System.currentTimeMillis());
+
+                       endStorage.saveEndPlayerLogout(endPlayerLogout);
+                   }
+               });
+            });
+        }
     }
 
     public EndStorage getEndStorage() {

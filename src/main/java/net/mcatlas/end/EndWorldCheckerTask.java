@@ -9,6 +9,7 @@ import java.util.List;
 public class EndWorldCheckerTask implements Runnable {
 
     private EndPlugin endPlugin;
+    private boolean portalWasActive;
 
     public EndWorldCheckerTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
@@ -17,6 +18,19 @@ public class EndWorldCheckerTask implements Runnable {
     @Override
     public void run() {
         EndStorage storage = endPlugin.getEndStorage();
+
+        boolean portalActive = endPlugin.getEndPortalManager().portalActive();
+
+        /*
+         *  Check portal states to announce a close/open
+         */
+        if (portalActive && !portalWasActive) {
+            Announcements.announcePortalOpen();
+        }
+
+        else if (!portalActive && portalWasActive) {
+            Announcements.announcePortalClose();
+        }
 
         /*
          *  Check if a new End Portal should be created
@@ -59,6 +73,8 @@ public class EndWorldCheckerTask implements Runnable {
                 continue;
             }
         }
+
+        portalWasActive = endPlugin.getEndPortalManager().portalActive();
     }
 
     private void deleteEndWorld(EndWorld endWorld) {
