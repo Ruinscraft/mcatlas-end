@@ -26,17 +26,15 @@ public class MySQLEndStorage implements EndStorage {
         this.username = username;
         this.password = password;
 
-        CompletableFuture.runAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (Statement statement = connection.createStatement()) {
-                    statement.execute("CREATE TABLE IF NOT EXISTS end_worlds (id VARCHAR(8), created_time BIGINT, deleted_time BIGINT DEFAULT 0, PRIMARY KEY (id));");
-                    statement.execute("CREATE TABLE IF NOT EXISTS end_portals (world_id VARCHAR(8), world_x INT, world_z INT, close_time BIGINT, UNIQUE (world_id), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
-                    statement.execute("CREATE TABLE IF NOT EXISTS end_player_logouts (world_id VARCHAR(8), mojang_uuid VARCHAR(36), logout_time BIGINT, UNIQUE KEY (world_id, mojang_uuid), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+        try (Connection connection = getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE IF NOT EXISTS end_worlds (id VARCHAR(8), created_time BIGINT, deleted_time BIGINT DEFAULT 0, PRIMARY KEY (id));");
+                statement.execute("CREATE TABLE IF NOT EXISTS end_portals (world_id VARCHAR(8), world_x INT, world_z INT, close_time BIGINT, UNIQUE (world_id), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
+                statement.execute("CREATE TABLE IF NOT EXISTS end_player_logouts (world_id VARCHAR(8), mojang_uuid VARCHAR(36), logout_time BIGINT, UNIQUE KEY (world_id, mojang_uuid), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
             }
-        });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -184,7 +182,7 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Optional<EndPortal>> queryOpenPortal() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement query = connection.prepareStatement("SELECT * FROM end_portals INNER JOIN end_worlds ON end_portals.world_id = end_worlds.id WHERE close_time > ? LIMIT 1")) {
+                try (PreparedStatement query = connection.prepareStatement("SELECT * FROM end_portals INNER JOIN end_worlds ON end_portals.world_id = end_worlds.id WHERE close_time > ? LIMIT 1;")) {
                     query.setLong(1, System.currentTimeMillis());
 
                     try (ResultSet result = query.executeQuery()) {

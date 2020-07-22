@@ -1,5 +1,6 @@
 package net.mcatlas.end.world;
 
+import net.mcatlas.end.EndPlugin;
 import net.mcatlas.end.WorldUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -8,6 +9,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class EndWorld {
+
+    public static final String END_WORLD_PREFIX = "end_world_";
 
     private String id;
     private long createdTime;
@@ -30,7 +33,7 @@ public class EndWorld {
     }
 
     public String getWorldName() {
-        return WorldUtil.END_WORLD_PREFIX + id;
+        return END_WORLD_PREFIX + id;
     }
 
     public long getCreatedTime() {
@@ -51,6 +54,30 @@ public class EndWorld {
 
     public Optional<World> findBukkitWorld() {
         return Bukkit.getWorlds().stream().filter(w -> w.getName().equals(getWorldName())).findFirst();
+    }
+
+    public boolean worldLoaded() {
+        return findBukkitWorld().isPresent();
+    }
+
+    public void loadWorld(EndPlugin endPlugin) {
+        WorldUtil.createBukkitEndWorld(endPlugin, this);
+    }
+
+    public boolean hasActivePortal(EndPlugin endPlugin) {
+        if (endPlugin.getEndPortalManager().portalActive()) {
+            return endPlugin.getEndPortalManager().getCurrent().getEndWorld().equals(this);
+        }
+
+        return false;
+    }
+
+    public int onlinePlayerCount() {
+        if (!worldLoaded()) {
+            return 0;
+        }
+
+        return findBukkitWorld().get().getPlayers().size();
     }
 
     @Override

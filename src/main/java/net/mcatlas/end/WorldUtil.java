@@ -1,6 +1,7 @@
 package net.mcatlas.end;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import net.mcatlas.end.world.EndWorld;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -14,8 +15,6 @@ import java.util.stream.Collectors;
 public final class WorldUtil {
 
     private static final Random RANDOM = new Random();
-
-    public static final String END_WORLD_PREFIX = "end_world_";
 
     public static boolean isInEndWorld(Player player) {
         return isEndWorld(player.getWorld());
@@ -40,9 +39,9 @@ public final class WorldUtil {
         return location;
     }
 
-    public static void createBukkitEndWorld(EndPlugin endPlugin, String worldId) {
+    public static void createBukkitEndWorld(EndPlugin endPlugin, EndWorld endWorld) {
         endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
-            WorldCreator worldCreator = WorldCreator.name(END_WORLD_PREFIX + worldId);
+            WorldCreator worldCreator = WorldCreator.name(endWorld.getWorldName());
 
             worldCreator.environment(World.Environment.THE_END);
             worldCreator.generateStructures(true);
@@ -56,9 +55,9 @@ public final class WorldUtil {
         });
     }
 
-    public static void deleteBukkitEndWorld(EndPlugin endPlugin, String worldName) {
+    public static void deleteBukkitEndWorld(EndPlugin endPlugin, EndWorld endWorld) {
         endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
-            World bukkitWorld = Bukkit.getWorld(worldName);
+            World bukkitWorld = Bukkit.getWorld(endWorld.getWorldName());
 
             if (bukkitWorld != null) {
                 // In case there are any players left in the world
@@ -74,10 +73,10 @@ public final class WorldUtil {
             }
 
             endPlugin.getServer().getScheduler().runTaskAsynchronously(endPlugin, () -> {
-                File file = new File(Bukkit.getWorldContainer(), worldName);
+                File file = new File(Bukkit.getWorldContainer(), endWorld.getWorldName());
 
                 if (deleteDirectory(file)) {
-                    endPlugin.getLogger().info("Deleted world: " + worldName);
+                    endPlugin.getLogger().info("Deleted world: " + endWorld.getWorldName());
                 }
             });
         });
@@ -91,7 +90,7 @@ public final class WorldUtil {
                 continue;
             }
 
-            if (file.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
+            if (file.getName().startsWith(EndWorld.END_WORLD_PREFIX)) {
                 endWorldDirectories.add(file.getName());
             }
         }

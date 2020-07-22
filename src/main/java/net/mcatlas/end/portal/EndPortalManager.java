@@ -70,11 +70,10 @@ public class EndPortalManager {
         EndPortal endPortal = new EndPortal(endWorld, location, closeTime);
 
         // create world
-        WorldUtil.createBukkitEndWorld(endPlugin, worldId);
+        WorldUtil.createBukkitEndWorld(endPlugin, endWorld);
 
         // save new world then the new portal to storage
-        endPlugin.getEndStorage().saveEndWorld(endWorld)
-                .thenRun(() -> endPlugin.getEndStorage().saveEndPortal(endPortal));
+        endPlugin.getEndStorage().saveEndWorld(endWorld).thenRun(() -> endPlugin.getEndStorage().saveEndPortal(endPortal));
 
         current = endPortal;
 

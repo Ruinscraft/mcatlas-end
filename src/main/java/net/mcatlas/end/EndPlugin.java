@@ -73,12 +73,18 @@ public class EndPlugin extends JavaPlugin {
         }
 
         endPortalManager = new EndPortalManager(portalWorld, xBound, zBound, portalOpenTimeMillis);
+
+        // Load current portal from storage
+        endStorage.queryOpenPortal().join().ifPresent(endPortal -> {
+            endPortalManager.setCurrent(endPortal);
+            getLogger().info("Loaded End Portal @ " + endPortal.getX() + "," + endPortal.getZ());
+        });
     }
 
     private void setupEndWorldCheckerTask() {
         endWorldCheckerTask = new EndWorldCheckerTask(this);
 
-        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS / 60, MINUTE_IN_TICKS / 30);
+        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, 0L, MINUTE_IN_TICKS / 30);
     }
 
     private void setupEndPortalEffectsTask() {

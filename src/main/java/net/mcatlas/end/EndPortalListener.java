@@ -2,6 +2,7 @@ package net.mcatlas.end;
 
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalManager;
+import net.mcatlas.end.world.EndWorld;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -25,7 +26,7 @@ public class EndPortalListener implements Listener {
 
         // if player is in end world, put last login time
         if (WorldUtil.isInEndWorld(player)) {
-            String worldId = player.getLocation().getWorld().getName().replace(WorldUtil.END_WORLD_PREFIX, "");
+            String worldId = player.getLocation().getWorld().getName().replace(EndWorld.END_WORLD_PREFIX, "");
 
             endPlugin.getEndStorage().queryEndWorld(worldId).thenAccept(o -> {
                 o.ifPresent(endWorld -> {
