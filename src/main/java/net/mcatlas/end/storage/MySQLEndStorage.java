@@ -1,8 +1,8 @@
 package net.mcatlas.end.storage;
 
 import net.mcatlas.end.EndPlayerLogout;
-import net.mcatlas.end.world.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
+import net.mcatlas.end.world.EndWorld;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -135,11 +135,12 @@ public class MySQLEndStorage implements EndStorage {
     public CompletableFuture<Void> saveEndPortal(EndPortal endPortal) {
         return CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement insert = connection.prepareStatement("INSERT INTO end_portals (world_id, world_x, world_z, close_time) VALUES (?, ?, ?, ?);")) {
-                    insert.setString(1, endPortal.getEndWorld().getId());
-                    insert.setInt(2, endPortal.getX());
-                    insert.setInt(3, endPortal.getZ());
-                    insert.setLong(4, endPortal.getCloseTime());
+                try (PreparedStatement insert = connection.prepareStatement("INSERT INTO end_portals (world_id, world_x, world_z, close_time) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE close_time = ?;")) {
+                    insert.setString(1, endPortal.getEndWorld().getId()); // on insert
+                    insert.setInt(2, endPortal.getX()); // on insert
+                    insert.setInt(3, endPortal.getZ()); // on insert
+                    insert.setLong(4, endPortal.getCloseTime()); // on insert
+                    insert.setLong(5, endPortal.getCloseTime()); // on duplicate key
                     insert.execute();
                 }
             } catch (SQLException e) {

@@ -29,6 +29,9 @@ public class EndPortalCommand implements CommandExecutor {
                 case "createhere":
                     createEndPortal(sender, subCmd);
                     break;
+                case "close":
+                    closeEndPortal(sender);
+                    break;
                 default:
                     showValidArgs(sender);
                     break;
@@ -91,8 +94,21 @@ public class EndPortalCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.GOLD + "Portal created @ (X,Z) " + endPortal.getX() + "," + endPortal.getZ());
     }
 
+    private void closeEndPortal(CommandSender sender) {
+        if (!endPlugin.getEndPortalManager().portalActive()) {
+            sender.sendMessage(ChatColor.RED + "There isn't an active portal to close.");
+            return;
+        }
+
+        EndPortal endPortal = endPlugin.getEndPortalManager().getCurrent();
+
+        endPortal.close(endPlugin);
+
+        sender.sendMessage(ChatColor.GOLD + "The portal was closed");
+    }
+
     private void showValidArgs(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "Valid arguments [create, createhere]");
+        sender.sendMessage(ChatColor.RED + "Valid arguments [create, createhere, close]");
     }
 
     private static String timeUntil(long then) {

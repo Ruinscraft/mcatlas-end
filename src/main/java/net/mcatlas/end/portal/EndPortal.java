@@ -1,5 +1,6 @@
 package net.mcatlas.end.portal;
 
+import net.mcatlas.end.EndPlugin;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.Location;
 
@@ -43,6 +44,12 @@ public class EndPortal {
 
     public boolean isClosed() {
         return !isOpen();
+    }
+
+    public void close(EndPlugin endPlugin) {
+        closeTime = System.currentTimeMillis();
+
+        endPlugin.getEndStorage().saveEndPortal(this);
     }
 
     @Override
