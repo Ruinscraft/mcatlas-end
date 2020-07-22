@@ -88,19 +88,17 @@ public class EndPortalManager {
     }
 
     public boolean isInPortal(Player player) {
-        if (!portalActive()) {
-            return false;
+        if (portalActive()) {
+            Location location = new Location(player.getWorld(), current.getX(), player.getLocation().getY(), current.getZ());
+            double dist = location.distanceSquared(player.getLocation());
+
+            // 6 blocks
+            if (dist < 36) {
+                return true;
+            }
         }
 
-        // teleport to current end world if close to portal
-        Location location = new Location(player.getWorld(), current.getX(), player.getLocation().getY(), current.getZ());
-        double dist = location.distanceSquared(player.getLocation());
-
-        if (dist < 36) { // 6 blocks
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     public static long getNextPortalTime() {
