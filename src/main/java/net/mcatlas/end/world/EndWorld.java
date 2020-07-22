@@ -1,5 +1,6 @@
-package net.mcatlas.end;
+package net.mcatlas.end.world;
 
+import net.mcatlas.end.WorldUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
@@ -28,6 +29,10 @@ public class EndWorld {
         return id;
     }
 
+    public String getWorldName() {
+        return WorldUtil.END_WORLD_PREFIX + id;
+    }
+
     public long getCreatedTime() {
         return createdTime;
     }
@@ -36,14 +41,16 @@ public class EndWorld {
         return deletedTime;
     }
 
+    public void setDeletedTime(long deletedTime) {
+        this.deletedTime = deletedTime;
+    }
+
     public boolean isDeleted() {
         return deletedTime != 0;
     }
 
     public Optional<World> findBukkitWorld() {
-        System.out.println(Bukkit.getWorlds());
-
-        return Bukkit.getWorlds().stream().filter(w -> w.getName().contains(id)).findFirst();
+        return Bukkit.getWorlds().stream().filter(w -> w.getName().equals(getWorldName())).findFirst();
     }
 
     @Override

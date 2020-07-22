@@ -1,147 +1,90 @@
 package net.mcatlas.end;
 
-import net.mcatlas.end.portal.EndPortal;
-import org.bukkit.Bukkit;
+import net.mcatlas.end.portal.EndPortalManager;
+import net.mcatlas.end.storage.EndStorage;
+import net.mcatlas.end.world.EndWorld;
 import org.bukkit.World;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class EndWorldCheckerTask implements Runnable {
 
-    private static final Random RANDOM = new Random();
-    private static final long DAY_LENGTH = 86400000;
-    private static final long DAY_HALF_LENGTH = DAY_LENGTH / 2;
-    private static final long OFFLINE_BEFORE_DELETE_LENGTH = 3600000;
-
     private EndPlugin endPlugin;
-    private long nextCreationTime;
 
     public EndWorldCheckerTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
     }
 
-    public long getNextCreationTime() {
-        return nextCreationTime;
-    }
-
     @Override
     public void run() {
-        updateCurrentPortal();
-        checkEndCreate();
-        checkEndDelete();
-        checkLoadEndWorlds();
-    }
+        EndStorage storage = endPlugin.getEndStorage();
+        List<String> endWorldDirs = WorldUtil.getEndWorldDirectories();
 
-    private void updateCurrentPortal() {
-        endPlugin.getEndStorage().queryEndPortals().thenAccept(portals -> {
-            for (EndPortal portal : portals) {
-                if (portal.isOpen()) {
-                    endPlugin.getEndPortalManager().setCurrent(portal);
+        /*
+         *  Delete any worlds which meet the criteria
+         */
+        for (EndWorld undeleted : storage.queryUndeletedEndWorlds().join()) {
+            // Check if it's the world the active portal goes to
+            if (endPlugin.getEndPortalManager().portalActive()) {
+                if (undeleted.equals(endPlugin.getEndPortalManager().getCurrent().getEndWorld())) {
+                    continue;
                 }
             }
-        });
-    }
 
-    public void checkLoadEndWorlds() {
-        List<String> endWorldFolders = new ArrayList<>();
-
-        for (File file : Bukkit.getWorldContainer().listFiles()) {
-            if (!file.isDirectory()) {
+            // Check if the world still has a directory
+            if (!endWorldDirs.contains(undeleted.getWorldName())) {
+                deleteEndWorld(undeleted);
                 continue;
             }
 
-            if (file.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
-                endWorldFolders.add(file.getName());
-            }
-        }
+            if (undeleted.findBukkitWorld().isPresent()) {
+                World bukkitWorld = undeleted.findBukkitWorld().get();
 
-        // check for worlds to load
-        for (String endWorldFolder : endWorldFolders) {
-            String worldId = endWorldFolder.replace(WorldUtil.END_WORLD_PREFIX, "");
-
-            endPlugin.getEndStorage().queryEndWorld(worldId).thenAccept(result -> {
-                if (result != null) {
-                    if (!result.isDeleted()) {
-                        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
-                            WorldUtil.createEndWorld(worldId);
-
-                            endPlugin.getLogger().info("Loaded world: " + endWorldFolder);
-                        });
-                    }
-                }
-            });
-        }
-
-        // check for worlds to unload
-        for (World world : Bukkit.getWorlds()) {
-            if (!world.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
-                continue; // not an end world
-            }
-
-            if (!endWorldFolders.contains(world.getWorldFolder().getName())) {
-                endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
-                    Bukkit.unloadWorld(world, false);
-
-                    endPlugin.getLogger().info("Unloaded deleted end world: " + world.getName());
-                });
-            }
-        }
-    }
-
-    private void checkEndCreate() {
-        if (System.currentTimeMillis() > nextCreationTime) {
-            Bukkit.getLogger().info("Creating new end world");
-
-            nextCreationTime = generateNewTime();
-
-            endPlugin.getEndPortalManager().createRandom();
-        }
-    }
-
-    private void checkEndDelete() {
-        EndPortal portal = endPlugin.getEndPortalManager().getCurrent();
-
-        if (portal == null) {
-            return;
-        }
-
-        endPlugin.getEndStorage().queryEndWorlds().thenAccept(endWorlds -> {
-            for (EndWorld endWorld : endWorlds) {
-                if (endWorld.isDeleted()) {
+                // There are online players in the world, continue
+                if (!bukkitWorld.getPlayers().isEmpty()) {
                     continue;
                 }
 
-                // Portal is open for the current EndWorld, continue on
-                if (portal.getEndWorld().equals(endWorld) && portal.isOpen()) {
-                    continue;
+                List<EndPlayerLogout> logouts = storage.queryEndPlayerLogouts(undeleted).join();
+                long activePlayerCount = logouts.stream().filter(l -> !l.expired()).count();
+
+                if (activePlayerCount == 0) {
+                    deleteEndWorld(undeleted);
+                } else {
+                    System.out.println("did not delete because of logouts");
                 }
+            } else {
+                WorldUtil.createBukkitEndWorld(endPlugin, undeleted.getId()); // load the world, we'll check it next go-around
+            }
+        }
 
-                // An old end world that the Portal doesn't go to
-                else if (!portal.getEndWorld().equals(endWorld)) {
-                    endPlugin.getEndStorage().queryEndPlayerLogouts(endWorld).thenAccept(logouts -> {
-                        boolean delete = true;
-                        long currentTime = System.currentTimeMillis();
-
-                        for (EndPlayerLogout logout : logouts) {
-                            if (currentTime - logout.getLogoutTime() <= OFFLINE_BEFORE_DELETE_LENGTH) {
-                                delete = false; // someone has been in the world recent enough
-                            }
-                        }
-
-                        if (delete) {
-                            WorldUtil.deleteWorld(endWorld.findBukkitWorld().get());
-                        }
-                    });
-                }
+        storage.queryOpenPortal().join().ifPresent(endPortal -> {
+            if (!endPortal.getEndWorld().isDeleted()) {
+                System.out.println(endPortal);
+                endPlugin.getEndPortalManager().setCurrent(endPortal);
             }
         });
+
+        if (EndPortalManager.generateNewPortal()) {
+            endPlugin.getEndPortalManager().createRandom(endPlugin);
+            endPlugin.getLogger().info("A new End Portal has been created.");
+        }
     }
 
-    public static long generateNewTime() {
-        return System.currentTimeMillis() + DAY_HALF_LENGTH + ((int) (DAY_LENGTH * RANDOM.nextDouble()));
+    private void deleteEndWorld(EndWorld endWorld) {
+        EndStorage storage = endPlugin.getEndStorage();
+
+        // Set deleted time to now
+        endWorld.setDeletedTime(System.currentTimeMillis());
+
+        // Save that the end world was deleted
+        storage.saveEndWorld(endWorld);
+
+        // Delete player logouts for that world
+        storage.deleteEndPlayerLogouts(endWorld);
+
+        // Delete the assoc Bukkit world
+        WorldUtil.deleteBukkitEndWorld(endPlugin, endWorld.getWorldName());
     }
 
 }

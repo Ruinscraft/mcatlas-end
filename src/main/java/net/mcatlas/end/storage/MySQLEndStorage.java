@@ -1,12 +1,13 @@
 package net.mcatlas.end.storage;
 
 import net.mcatlas.end.EndPlayerLogout;
-import net.mcatlas.end.EndWorld;
+import net.mcatlas.end.world.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,7 +29,7 @@ public class MySQLEndStorage implements EndStorage {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (Statement statement = connection.createStatement()) {
-                    statement.execute("CREATE TABLE IF NOT EXISTS end_worlds (id VARCHAR(8), created_time BIGINT, deleted_time BIGINT, PRIMARY KEY (id));");
+                    statement.execute("CREATE TABLE IF NOT EXISTS end_worlds (id VARCHAR(8), created_time BIGINT, deleted_time BIGINT DEFAULT 0, PRIMARY KEY (id));");
                     statement.execute("CREATE TABLE IF NOT EXISTS end_portals (world_id VARCHAR(8), world_x INT, world_z INT, close_time BIGINT, UNIQUE (world_id), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
                     statement.execute("CREATE TABLE IF NOT EXISTS end_player_logouts (world_id VARCHAR(8), mojang_uuid VARCHAR(36), logout_time BIGINT, UNIQUE KEY (world_id, mojang_uuid), FOREIGN KEY (world_id) REFERENCES end_worlds (id));");
                 }
@@ -82,7 +83,33 @@ public class MySQLEndStorage implements EndStorage {
     }
 
     @Override
-    public CompletableFuture<EndWorld> queryEndWorld(String id) {
+    public CompletableFuture<List<EndWorld>> queryUndeletedEndWorlds() {
+        return CompletableFuture.supplyAsync(() -> {
+           List<EndWorld> endWorlds = new ArrayList<>();
+
+           try (Connection connection = getConnection()) {
+               try (PreparedStatement query = connection.prepareStatement("SELECT * FROM end_worlds WHERE deleted_time = 0 OR deleted_time IS NULL;")) {
+                   try (ResultSet result = query.executeQuery()) {
+                       while (result.next()) {
+                           String worldId = result.getString("id");
+                           long createdTime = result.getLong("created_time");
+                           long deletedTime = 0; // duh
+                           EndWorld endWorld = new EndWorld(worldId, createdTime, deletedTime);
+
+                           endWorlds.add(endWorld);
+                       }
+                   }
+               }
+           } catch (SQLException e) {
+               e.printStackTrace();
+           }
+
+            return endWorlds;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Optional<EndWorld>> queryEndWorld(String id) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement query = connection.prepareStatement("SELECT * FROM end_worlds WHERE id = ?;")) {
@@ -92,8 +119,9 @@ public class MySQLEndStorage implements EndStorage {
                         while (result.next()) {
                             long createdTime = result.getLong("created_time");
                             long deletedTime = result.getLong("deleted_time");
+                            EndWorld endWorld = new EndWorld(id, createdTime, deletedTime);
 
-                            return new EndWorld(id, createdTime, deletedTime);
+                            return Optional.of(endWorld);
                         }
                     }
                 }
@@ -101,7 +129,7 @@ public class MySQLEndStorage implements EndStorage {
                 e.printStackTrace();
             }
 
-            return null;
+            return Optional.empty();
         });
     }
 
@@ -149,6 +177,36 @@ public class MySQLEndStorage implements EndStorage {
             }
 
             return endPortals;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Optional<EndPortal>> queryOpenPortal() {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement query = connection.prepareStatement("SELECT * FROM end_portals INNER JOIN end_worlds ON end_portals.world_id = end_worlds.id WHERE close_time > ? LIMIT 1")) {
+                    query.setLong(1, System.currentTimeMillis());
+
+                    try (ResultSet result = query.executeQuery()) {
+                        while (result.next()) {
+                            String worldId = result.getString("world_id");
+                            long worldCreatedTime = result.getLong("created_time");
+                            long worldDeletedTime = result.getLong("deleted_time");
+                            int x = result.getInt("world_x");
+                            int z = result.getInt("world_z");
+                            long closeTime = result.getLong("close_time");
+                            EndWorld endWorld = new EndWorld(worldId, worldCreatedTime, worldDeletedTime);
+                            EndPortal endPortal = new EndPortal(endWorld, x, z, closeTime);
+
+                            return Optional.of(endPortal);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return Optional.empty();
         });
     }
 

@@ -1,10 +1,11 @@
 package net.mcatlas.end.storage;
 
 import net.mcatlas.end.EndPlayerLogout;
-import net.mcatlas.end.EndWorld;
+import net.mcatlas.end.world.EndWorld;
 import net.mcatlas.end.portal.EndPortal;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,7 +18,9 @@ public interface EndStorage {
 
     CompletableFuture<List<EndWorld>> queryEndWorlds();
 
-    CompletableFuture<EndWorld> queryEndWorld(String id);
+    CompletableFuture<List<EndWorld>> queryUndeletedEndWorlds();
+
+    CompletableFuture<Optional<EndWorld>> queryEndWorld(String id);
 
     /*
      *  End Portals
@@ -25,6 +28,8 @@ public interface EndStorage {
     CompletableFuture<Void> saveEndPortal(EndPortal endPortal);
 
     CompletableFuture<List<EndPortal>> queryEndPortals();
+
+    CompletableFuture<Optional<EndPortal>> queryOpenPortal();
 
     /*
      *  End Player Logouts

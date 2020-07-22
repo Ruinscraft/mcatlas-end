@@ -52,7 +52,7 @@ public class EndPortalCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.GOLD + "Close time: " + timeUntil(current.getCloseTime()));
         } else {
             sender.sendMessage(ChatColor.GOLD + "There is currently no End Portal active.");
-            sender.sendMessage(ChatColor.GOLD + "Next scheduled End Portal opening: " + timeUntil(endPlugin.getEndWorldCheckerTask().getNextCreationTime()));
+            sender.sendMessage(ChatColor.GOLD + "Next scheduled End Portal opening: " + timeUntil(EndPortalManager.getNextPortalTime()));
         }
     }
 
@@ -66,8 +66,8 @@ public class EndPortalCommand implements CommandExecutor {
 
         if (label.equals("create")) {
             World portalWorld = endPlugin.getEndPortalManager().getPortalWorld();
-            int xBound = endPlugin.getEndPortalManager().getxBound();
-            int zBound = endPlugin.getEndPortalManager().getzBound();
+            int xBound = endPlugin.getEndPortalManager().getXBound();
+            int zBound = endPlugin.getEndPortalManager().getZBound();
 
             location = WorldUtil.findUnclaimedLocation(portalWorld, xBound, zBound);
         }
@@ -86,7 +86,7 @@ public class EndPortalCommand implements CommandExecutor {
             return;
         }
 
-        EndPortal endPortal = endPlugin.getEndPortalManager().create(location);
+        EndPortal endPortal = endPlugin.getEndPortalManager().create(endPlugin, location);
 
         sender.sendMessage(ChatColor.GOLD + "Portal created @ (X,Z) " + endPortal.getX() + "," + endPortal.getZ());
     }

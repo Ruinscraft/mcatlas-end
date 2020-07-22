@@ -1,6 +1,6 @@
 package net.mcatlas.end.portal;
 
-import net.mcatlas.end.EndWorld;
+import net.mcatlas.end.world.EndWorld;
 import org.bukkit.Location;
 
 public class EndPortal {
@@ -43,6 +43,16 @@ public class EndPortal {
 
     public boolean isClosed() {
         return !isOpen();
+    }
+
+    @Override
+    public String toString() {
+        return "EndPortal{" +
+                "endWorld=" + endWorld +
+                ", x=" + x +
+                ", z=" + z +
+                ", closeTime=" + closeTime +
+                '}';
     }
 
 }

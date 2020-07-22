@@ -1,6 +1,9 @@
 package net.mcatlas.end;
 
+import net.mcatlas.end.world.EndWorld;
+
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class EndPlayerLogout {
 
@@ -24,6 +27,11 @@ public class EndPlayerLogout {
 
     public long getLogoutTime() {
         return logoutTime;
+    }
+
+    public boolean expired() {
+        // has it been 15 minutes since the logout time?
+        return logoutTime + TimeUnit.MINUTES.toMillis(15) < System.currentTimeMillis();
     }
 
 }

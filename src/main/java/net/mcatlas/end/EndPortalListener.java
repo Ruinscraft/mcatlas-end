@@ -25,20 +25,16 @@ public class EndPortalListener implements Listener {
 
         // if player is in end world, put last login time
         if (WorldUtil.isInEndWorld(player)) {
-            endPlugin.getEndStorage().queryEndWorlds().thenAccept(result -> {
-                EndWorld currentEndWorld = null;
+            String worldId = player.getLocation().getWorld().getName().replace(WorldUtil.END_WORLD_PREFIX, "");
 
-                for (EndWorld endWorld : result) {
-                    if (player.getWorld().getName().contains(endWorld.getId())) {
-                        currentEndWorld = endWorld;
+            endPlugin.getEndStorage().queryEndWorld(worldId).thenAccept(o -> {
+                o.ifPresent(endWorld -> {
+                    if (!endWorld.isDeleted()) {
+                        EndPlayerLogout endPlayerLogout = new EndPlayerLogout(endWorld, player.getUniqueId(), System.currentTimeMillis());
+
+                        endPlugin.getEndStorage().saveEndPlayerLogout(endPlayerLogout);
                     }
-                }
-
-                if (currentEndWorld != null) {
-                    EndPlayerLogout endPlayerLogout = new EndPlayerLogout(currentEndWorld, player.getUniqueId(), System.currentTimeMillis());
-
-                    endPlugin.getEndStorage().saveEndPlayerLogout(endPlayerLogout);
-                }
+                });
             });
         }
     }
@@ -49,27 +45,28 @@ public class EndPortalListener implements Listener {
         World nextWorld = player.getWorld();
         World prevWorld = event.getFrom().getWorld();
 
-        // not changing worlds
+        // Not changing worlds
         if (prevWorld.equals(nextWorld)) {
             return;
         }
 
-        // coming from an End world
+        // Coming from an End world
         if (WorldUtil.isEndWorld(prevWorld)) {
             endPlugin.getEndStorage().deleteEndPlayerLogouts(player.getUniqueId());
-        } else if (WorldUtil.isEndWorld(nextWorld)) {
-            EndPortal currentPortal = endPlugin.getEndPortalManager().getCurrent();
+        }
 
-            // cancel if no portal, portal isnt open, player teleported to an end world the portal doesnt lead to
-            if (currentPortal == null || !currentPortal.isOpen()) {
+        // Going to an End world
+        else if (WorldUtil.isEndWorld(nextWorld)) {
+            if (!endPlugin.getEndPortalManager().portalActive()) {
                 event.setCancelled(true);
             }
 
-            currentPortal.getEndWorld().findBukkitWorld().ifPresent(portalEndWorld -> {
-                if (!portalEndWorld.equals(nextWorld)) {
-                    event.setCancelled(true);
-                }
-            });
+            EndPortal endPortal = endPlugin.getEndPortalManager().getCurrent();
+
+            // Going to an End world that isn't the one the portal goes to
+            if (!nextWorld.getName().equals(endPortal.getEndWorld().getWorldName())) {
+                event.setCancelled(true);
+            }
         }
     }
 

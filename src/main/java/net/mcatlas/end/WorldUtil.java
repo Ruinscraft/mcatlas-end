@@ -5,7 +5,11 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class WorldUtil {
 
@@ -36,33 +40,86 @@ public final class WorldUtil {
         return location;
     }
 
-    public static World createEndWorld(String worldId) {
-        WorldCreator worldCreator = WorldCreator.name(END_WORLD_PREFIX + worldId);
+    public static void createBukkitEndWorld(EndPlugin endPlugin, String worldId) {
+        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+            WorldCreator worldCreator = WorldCreator.name(END_WORLD_PREFIX + worldId);
 
-        worldCreator.environment(World.Environment.THE_END);
-        worldCreator.generateStructures(true);
-        worldCreator.seed(RANDOM.nextLong());
-        worldCreator.type(WorldType.NORMAL);
+            worldCreator.environment(World.Environment.THE_END);
+            worldCreator.generateStructures(true);
+            worldCreator.seed(RANDOM.nextLong());
+            worldCreator.type(WorldType.NORMAL);
 
-        World world = worldCreator.createWorld();
+            World world = worldCreator.createWorld();
 
-        Bukkit.getWorlds().add(world);
-
-        return world;
+            endPlugin.getServer().getWorlds().add(world);
+            endPlugin.getLogger().info("Loaded world: " + world.getName());
+        });
     }
 
-    public static void deleteWorld(World world) {
-        if (world == null) {
-            return;
+    public static void deleteBukkitEndWorld(EndPlugin endPlugin, String worldName) {
+        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+            World bukkitWorld = Bukkit.getWorld(worldName);
+
+            if (bukkitWorld != null) {
+                // In case there are any players left in the world
+                for (Player player : bukkitWorld.getPlayers()) {
+                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
+
+                endPlugin.getServer().unloadWorld(bukkitWorld, false);
+
+                for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
+                    chunk.unload(false);
+                }
+            }
+
+            endPlugin.getServer().getScheduler().runTaskAsynchronously(endPlugin, () -> {
+                File file = new File(Bukkit.getWorldContainer(), worldName);
+
+                if (deleteDirectory(file)) {
+                    endPlugin.getLogger().info("Deleted world: " + worldName);
+                }
+            });
+        });
+    }
+
+    public static List<String> getEndWorldDirectories() {
+        List<String> endWorldDirectories = new ArrayList<>();
+
+        for (File file : Bukkit.getWorldContainer().listFiles()) {
+            if (!file.isDirectory()) {
+                continue;
+            }
+
+            if (file.getName().startsWith(WorldUtil.END_WORLD_PREFIX)) {
+                endWorldDirectories.add(file.getName());
+            }
         }
 
-        Bukkit.unloadWorld(world, false);
+        return endWorldDirectories;
+    }
 
-        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+    public static Set<World> getBukkitEndWorlds() {
+        return Bukkit.getWorlds()
+                .stream()
+                .filter(w -> w.getEnvironment() == World.Environment.THE_END)
+                .collect(Collectors.toSet());
+    }
 
-        if (folder.exists()) {
-            folder.delete();
+    private static boolean deleteDirectory(File directory) {
+        if (directory.exists()) {
+            File files[] = directory.listFiles();
+
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
         }
+
+        return directory.delete();
     }
 
 }

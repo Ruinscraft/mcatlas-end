@@ -16,6 +16,7 @@ public class EndPlugin extends JavaPlugin {
     private EndStorage endStorage;
     private EndPortalManager endPortalManager;
     private EndWorldCheckerTask endWorldCheckerTask;
+    private EndPortalEffectsTask endPortalEffectsTask;
 
     @Override
     public void onEnable() {
@@ -24,8 +25,7 @@ public class EndPlugin extends JavaPlugin {
         setupEndStorage();
         setupEndPortalManager();
         setupEndWorldCheckerTask();
-
-        getServer().getScheduler().runTaskTimerAsynchronously(this, new EndPortalEffectsTask(this), 20 * 5, 2);
+        setupEndPortalEffectsTask();
 
         // Register listeners
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
@@ -44,6 +44,10 @@ public class EndPlugin extends JavaPlugin {
 
     public EndWorldCheckerTask getEndWorldCheckerTask() {
         return endWorldCheckerTask;
+    }
+
+    public EndPortalEffectsTask getEndPortalEffectsTask() {
+        return endPortalEffectsTask;
     }
 
     private void setupEndStorage() {
@@ -68,13 +72,21 @@ public class EndPlugin extends JavaPlugin {
             return;
         }
 
-        endPortalManager = new EndPortalManager(endStorage, portalWorld, xBound, zBound, portalOpenTimeMillis);
+        endPortalManager = new EndPortalManager(portalWorld, xBound, zBound, portalOpenTimeMillis);
     }
 
     private void setupEndWorldCheckerTask() {
         endWorldCheckerTask = new EndWorldCheckerTask(this);
 
-        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS / 60, MINUTE_IN_TICKS);
+        getServer().getScheduler().runTaskTimer(this, endWorldCheckerTask, MINUTE_IN_TICKS / 60, MINUTE_IN_TICKS / 30);
+    }
+
+    private void setupEndPortalEffectsTask() {
+        endPortalEffectsTask = new EndPortalEffectsTask(this);
+
+        long periodTicks = 2;
+
+        getServer().getScheduler().runTaskTimerAsynchronously(this, endPortalEffectsTask, MINUTE_IN_TICKS / 2, periodTicks);
     }
 
 }
