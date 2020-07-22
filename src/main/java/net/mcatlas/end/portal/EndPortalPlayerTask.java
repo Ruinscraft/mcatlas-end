@@ -24,6 +24,17 @@ public class EndPortalPlayerTask implements Runnable {
     @Override
     public void run() {
         Set<Player> playersToRemove = new HashSet<>();
+
+        // add players to playersInPortal list if not there yet
+        for (Player player : portalManager.getPortalWorld().getPlayers()) {
+            if (portalManager.isInPortal(player)) {
+                if (!playersInPortal.containsKey(player)) {
+                    playersInPortal.put(player, System.currentTimeMillis() + (1000 * 8));
+                }
+            }
+        }
+
+        // cycle through players currently in portal
         for (Map.Entry<Player, Long> entry : playersInPortal.entrySet()) {
             Player player = entry.getKey();
             if (!portalManager.isInPortal(player)) {
@@ -58,6 +69,9 @@ public class EndPortalPlayerTask implements Runnable {
             portalManager.getCurrent().getEndWorld().findBukkitWorld().ifPresent(world -> {
                player.teleport(world.getSpawnLocation());
             });
+
+            player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
+                    "Once the portal closes, you will not be able to return to this End world!");
 
             playersToRemove.add(player);
         }

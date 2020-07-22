@@ -76,9 +76,6 @@ public class EndPortalListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-
-            player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
-                    "Once the portal closes, you will not be able to return to this End world!");
         }
     }
 
