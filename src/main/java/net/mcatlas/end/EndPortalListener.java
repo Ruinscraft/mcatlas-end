@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class EndPortalListener implements Listener {
 
-    private EndPlugin endPlugin;
+    private final EndPlugin endPlugin;
 
     public EndPortalListener(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;

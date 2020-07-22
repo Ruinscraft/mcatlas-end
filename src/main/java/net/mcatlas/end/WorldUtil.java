@@ -4,6 +4,7 @@ import com.palmergames.bukkit.towny.TownyAPI;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.util.Random;
 
 public final class WorldUtil {
@@ -48,6 +49,20 @@ public final class WorldUtil {
         Bukkit.getWorlds().add(world);
 
         return world;
+    }
+
+    public static void deleteWorld(World world) {
+        if (world == null) {
+            return;
+        }
+
+        Bukkit.unloadWorld(world, false);
+
+        File folder = new File(Bukkit.getWorldContainer() + "/" + world.getName());
+
+        if (folder.exists()) {
+            folder.delete();
+        }
     }
 
 }
