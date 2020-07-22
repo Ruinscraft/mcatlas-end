@@ -66,6 +66,7 @@ public class EndPortalListener implements Listener {
         else if (WorldUtil.isEndWorld(nextWorld)) {
             if (!endPlugin.getEndPortalManager().portalActive()) {
                 event.setCancelled(true);
+                return;
             }
 
             EndPortal endPortal = endPlugin.getEndPortalManager().getCurrent();
@@ -73,9 +74,10 @@ public class EndPortalListener implements Listener {
             // Going to an End world that isn't the one the portal goes to
             if (!nextWorld.getName().equals(endPortal.getEndWorld().getWorldName())) {
                 event.setCancelled(true);
+                return;
             }
 
-            player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
+            player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
                     "Once the portal closes, you will not be able to return to this End world!");
         }
     }
