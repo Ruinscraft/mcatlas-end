@@ -92,6 +92,10 @@ public class EndPortalManager {
             return false;
         }
 
+        if (player == null) {
+            return false;
+        }
+
         // teleport to current end world if close to portal
         Location location = new Location(player.getWorld(), current.getX(), player.getLocation().getY(), current.getZ());
         double dist = location.distanceSquared(player.getLocation());
