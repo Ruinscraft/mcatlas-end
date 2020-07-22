@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public final class WorldUtil {
@@ -24,16 +25,16 @@ public final class WorldUtil {
         return world.getEnvironment() == World.Environment.THE_END;
     }
 
-    public static Location findUnclaimedLocation(World world, int maxX, int maxZ) {
-        int x = ((int) (maxX * RANDOM.nextDouble())) + (maxX / 2);
-        int z = ((int) (maxZ * RANDOM.nextDouble())) + (maxX / 2);
+    public static Location findUnclaimedLocation(World world, int xBound, int zBound) {
+        final double randomX = ThreadLocalRandom.current().nextDouble(-xBound, xBound);
+        final double randomZ = ThreadLocalRandom.current().nextDouble(-zBound, zBound);
 
-        Location location = new Location(world, x, 64, z);
+        Location location = new Location(world, randomX, 64D, randomZ);
         String townName = TownyAPI.getInstance().getTownName(location);
 
         // there was a town claim at the randomly chosen location
         if (townName != null) {
-            return findUnclaimedLocation(world, maxX, maxZ);
+            return findUnclaimedLocation(world, xBound, zBound);
         }
 
         return location;
