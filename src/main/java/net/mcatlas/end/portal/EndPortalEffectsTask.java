@@ -2,6 +2,7 @@ package net.mcatlas.end.portal;
 
 import net.mcatlas.end.EndPlugin;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 
@@ -9,12 +10,15 @@ public class EndPortalEffectsTask implements Runnable {
 
     private EndPlugin endPlugin;
     private EndPortalManager manager;
+
     private double y;
+    private int lightningTimer;
 
     public EndPortalEffectsTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
         this.manager = endPlugin.getEndPortalManager();
         y = 128;
+        lightningTimer = 20 * 60 * 5;
     }
 
     @Override
@@ -26,11 +30,17 @@ public class EndPortalEffectsTask implements Runnable {
             y = 0;
         }
 
-        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 0, 0), 1);
-
         World world = manager.getPortalWorld();
         double x = manager.getCurrent().getX();
         double z = manager.getCurrent().getZ();
+
+        lightningTimer++;
+        if (lightningTimer > 20 * 60 * 5) {
+            world.strikeLightning(world.getHighestBlockAt((int) x, (int) z).getLocation());
+            lightningTimer = 0;
+        }
+
+        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 0, 0), 1);
 
         world.spawnParticle(Particle.VILLAGER_ANGRY, x, y - .4, z, 1);
 

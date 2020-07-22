@@ -84,7 +84,7 @@ public class EndPlugin extends JavaPlugin {
     private void setupEndPortalEffectsTask() {
         endPortalEffectsTask = new EndPortalEffectsTask(this);
 
-        long periodTicks = 2;
+        long periodTicks = 1;
 
         getServer().getScheduler().runTaskTimerAsynchronously(this, endPortalEffectsTask, MINUTE_IN_TICKS / 2, periodTicks);
     }
