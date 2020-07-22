@@ -20,7 +20,10 @@ public class EndPortalEffectsTask implements Runnable {
 
     @Override
     public void run() {
-        if (!manager.portalActive()) return;
+        if (!manager.portalActive()) {
+            lightningTimer = 20 * 60 * 5; // ensure lightning strikes the first time the portal opens
+            return;
+        }
 
         y += .6;
         if (y > 255) {
