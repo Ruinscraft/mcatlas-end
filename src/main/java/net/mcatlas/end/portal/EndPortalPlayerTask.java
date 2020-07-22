@@ -66,9 +66,7 @@ public class EndPortalPlayerTask implements Runnable {
             }
 
             // teleport
-            portalManager.getCurrent().getEndWorld().findBukkitWorld().ifPresent(world -> {
-               player.teleport(world.getSpawnLocation());
-            });
+            portalManager.getCurrent().getEndWorld().teleportPlayer(player);
 
             player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
                     "Once the portal closes, you will not be able to return to this End world!");
