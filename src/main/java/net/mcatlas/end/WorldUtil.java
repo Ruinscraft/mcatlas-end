@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public final class WorldUtil {
 
-    private static final Random RANDOM = new Random();
+    public static final Random RANDOM = new Random();
 
     public static boolean isInEndWorld(Player player) {
         return isEndWorld(player.getWorld());

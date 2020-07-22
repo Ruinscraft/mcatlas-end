@@ -116,7 +116,7 @@ public class EndPlugin extends JavaPlugin {
 
         long periodTicks = 1;
 
-        getServer().getScheduler().runTaskTimerAsynchronously(this, endPortalEffectsTask, MINUTE_IN_TICKS / 2, periodTicks);
+        getServer().getScheduler().runTaskTimerAsynchronously(this, endPortalEffectsTask, 0, periodTicks);
     }
 
 }
