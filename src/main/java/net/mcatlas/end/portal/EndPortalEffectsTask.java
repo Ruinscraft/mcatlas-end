@@ -1,10 +1,7 @@
 package net.mcatlas.end.portal;
 
 import net.mcatlas.end.EndPlugin;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
+import org.bukkit.*;
 
 public class EndPortalEffectsTask implements Runnable {
 
@@ -36,7 +33,11 @@ public class EndPortalEffectsTask implements Runnable {
 
         lightningTimer++;
         if (lightningTimer > 20 * 60 * 5) {
-            world.strikeLightning(world.getHighestBlockAt((int) x, (int) z).getLocation());
+            final int xLightning = (int) x;
+            final int zLightning = (int) z;
+            Bukkit.getScheduler().runTask(endPlugin, () -> {
+                world.strikeLightning(world.getHighestBlockAt(xLightning, zLightning).getLocation());
+            });
             lightningTimer = 0;
         }
 

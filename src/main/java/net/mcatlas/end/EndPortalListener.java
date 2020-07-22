@@ -3,6 +3,7 @@ package net.mcatlas.end;
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.world.EndWorld;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -68,6 +69,9 @@ public class EndPortalListener implements Listener {
             if (!nextWorld.getName().equals(endPortal.getEndWorld().getWorldName())) {
                 event.setCancelled(true);
             }
+
+            player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
+                    "Once the portal closes, you will not be able to return to this End world!");
         }
     }
 
