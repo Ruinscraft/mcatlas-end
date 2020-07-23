@@ -7,11 +7,14 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class EndPortalManager {
+
+    private static final int PORTAL_AREA_RAD = 36; // within 6 blocks
 
     private static long nextPortalTime;
 
@@ -87,22 +90,47 @@ public class EndPortalManager {
         return create(endPlugin, location);
     }
 
-    public boolean isInPortal(Player player) {
-        if (player == null) {
+    public Optional<Location> findPortalBukkitLocation() {
+        if (!portalActive()) {
+            return Optional.empty();
+        }
+
+        int x = current.getX();
+        int z = current.getZ();
+        int y = portalWorld.getHighestBlockYAt(x, z) + 1;
+
+        Location location = new Location(portalWorld, x, y, z);
+
+        return Optional.of(location);
+    }
+
+    public void teleportNearPortal(Player player) {
+        findPortalBukkitLocation().ifPresent(location -> {
+            double angle = Math.random() * 360;
+            int rad = 30;
+            int x = (int) (Math.cos(angle) * rad);
+            int z = (int) (Math.sin(angle) * rad);
+
+            location.add(x, 0, z);
+            location.setY(location.getWorld().getHighestBlockYAt(location));
+
+            player.teleport(location);
+        });
+    }
+
+    public boolean isInPortalArea(Location location) {
+        if (!portalActive()) {
             return false;
         }
 
-        if (portalActive()) {
-            Location location = new Location(player.getWorld(), current.getX(), player.getLocation().getY(), current.getZ());
-            double dist = location.distanceSquared(player.getLocation());
+        Location portalLoc = findPortalBukkitLocation().get();
+        double dist = portalLoc.distanceSquared(location);
 
-            // 6 blocks
-            if (dist < 36) {
-                return true;
-            }
-        }
+        return dist < PORTAL_AREA_RAD;
+    }
 
-        return false;
+    public boolean isInPortalArea(Player player) {
+        return isInPortalArea(player.getLocation());
     }
 
     public static long getNextPortalTime() {

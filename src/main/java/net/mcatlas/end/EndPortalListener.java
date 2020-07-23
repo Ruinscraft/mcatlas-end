@@ -8,6 +8,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -23,7 +25,31 @@ public class EndPortalListener implements Listener {
 
     @EventHandler // this handles the vanilla End Portals (end world->over world)
     public void onEndPortalEnter(PlayerPortalEvent event) {
+        if (event.getCause() != PlayerTeleportEvent.TeleportCause.END_PORTAL) {
+            return;
+        }
 
+        Player player = event.getPlayer();
+
+        endPlugin.getEndPortalManager().teleportNearPortal(player);
+    }
+
+    @EventHandler // prevent traps/griefing around the portal
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (endPlugin.getEndPortalManager().isInPortalArea(event.getPlayer())) {
+            event.setCancelled(true);
+
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
+        }
+    }
+
+    @EventHandler // prevent traps/griefing around the portal
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (endPlugin.getEndPortalManager().isInPortalArea(event.getPlayer())) {
+            event.setCancelled(true);
+
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
+        }
     }
 
     @EventHandler
@@ -89,7 +115,7 @@ public class EndPortalListener implements Listener {
             return;
         }
 
-        if (endPortalManager.isInPortal(player)) {
+        if (endPortalManager.isInPortalArea(player)) {
             EndPortal endPortal = endPortalManager.getCurrent();
 
             endPortal.getEndWorld().findBukkitWorld().ifPresent(endBukkitWorld -> {

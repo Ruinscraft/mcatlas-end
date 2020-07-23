@@ -27,7 +27,7 @@ public class EndPortalPlayerTask implements Runnable {
 
         // add players to playersInPortal list if not there yet
         for (Player player : portalManager.getPortalWorld().getPlayers()) {
-            if (portalManager.isInPortal(player)) {
+            if (portalManager.isInPortalArea(player)) {
                 if (!playersInPortal.containsKey(player)) {
                     playersInPortal.put(player, System.currentTimeMillis() + (1000 * 8));
                 }
@@ -37,7 +37,7 @@ public class EndPortalPlayerTask implements Runnable {
         // cycle through players currently in portal
         for (Map.Entry<Player, Long> entry : playersInPortal.entrySet()) {
             Player player = entry.getKey();
-            if (!portalManager.isInPortal(player)) {
+            if (!portalManager.isInPortalArea(player)) {
                 playersToRemove.add(player);
                 continue;
             }

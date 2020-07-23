@@ -32,6 +32,11 @@ public class EndPortalCommand implements CommandExecutor {
                 case "close":
                     closeEndPortal(sender);
                     break;
+                case "tp":
+                    if (sender instanceof Player) {
+                        teleportToPortal((Player) sender);
+                    }
+                    break;
                 default:
                     showValidArgs(sender);
                     break;
@@ -104,11 +109,17 @@ public class EndPortalCommand implements CommandExecutor {
 
         endPortal.close(endPlugin);
 
-        sender.sendMessage(ChatColor.GOLD + "The portal was closed");
+        sender.sendMessage(ChatColor.GOLD + "The portal was closed.");
+    }
+
+    private void teleportToPortal(Player player) {
+        endPlugin.getEndPortalManager().teleportNearPortal(player);
+
+        player.sendMessage(ChatColor.GOLD + "Teleported near the portal.");
     }
 
     private void showValidArgs(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "Valid arguments [create, createhere, close]");
+        sender.sendMessage(ChatColor.RED + "Valid arguments [create, createhere, close, tp]");
     }
 
     private static String timeUntil(long then) {
