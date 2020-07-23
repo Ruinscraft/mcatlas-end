@@ -3,12 +3,16 @@ package net.mcatlas.end;
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.EnderSignal;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -19,6 +23,26 @@ public class EndPortalListener implements Listener {
 
     public EndPortalListener(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
+    }
+
+    @EventHandler
+    public void onEnderSignalSpawn(EntitySpawnEvent event) {
+        if (event.getEntityType() != EntityType.ENDER_SIGNAL) {
+            return;
+        }
+
+        Location target;
+
+        if (endPlugin.getEndPortalManager().portalActive()) {
+            target = endPlugin.getEndPortalManager().findPortalBukkitLocation().get();
+        } else {
+            target = event.getLocation().clone();
+            target.setY(0); // Basically, point strait down
+        }
+
+        EnderSignal enderSignal = (EnderSignal) event.getEntity();
+
+        enderSignal.setTargetLocation(target);
     }
 
     @EventHandler // this handles the vanilla End Portals (end world->over world)

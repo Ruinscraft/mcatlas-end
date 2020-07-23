@@ -13,8 +13,9 @@ public class EndPortalEffectsTask implements Runnable {
     private static final long LIGHTNING_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(2);
     private static final double PORTAL_RADIUS = 6D;
     private static final int PARTICLE_COUNT = 30;
-    private static final Color PARTICLE_COLOR = Color.BLACK;
-    private static final Particle.DustOptions PARTICLE_OPTIONS = new Particle.DustOptions(PARTICLE_COLOR, 3);
+    private static final Particle.DustOptions PARTICLE_OPTIONS_BLACK = new Particle.DustOptions(Color.BLACK, 3);
+    private static final Particle.DustOptions PARTICLE_OPTIONS_PURPLE = new Particle.DustOptions(Color.PURPLE, 3);
+
 
     private EndPlugin endPlugin;
     private long nextLightningTime;
@@ -28,6 +29,7 @@ public class EndPortalEffectsTask implements Runnable {
         EndPortalManager endPortalManager = endPlugin.getEndPortalManager();
 
         if (!endPortalManager.portalActive()) {
+            nextLightningTime = 0;
             return;
         }
 
@@ -49,7 +51,16 @@ public class EndPortalEffectsTask implements Runnable {
                 double angle = 2 * Math.PI * i / PARTICLE_COUNT;
                 Location point = portalCenter.clone().add(PORTAL_RADIUS * Math.sin(angle), 0.0d, PORTAL_RADIUS * Math.cos(angle));
                 point.add(0, j, 0); // Add the height
-                world.spawnParticle(Particle.REDSTONE, point, 1, PARTICLE_OPTIONS);
+
+                Particle.DustOptions options;
+
+                if (i % 2 == 0) {
+                    options = PARTICLE_OPTIONS_BLACK;
+                } else {
+                    options = PARTICLE_OPTIONS_PURPLE;
+                }
+
+                world.spawnParticle(Particle.REDSTONE, point, 1, options);
             }
         }
     }
