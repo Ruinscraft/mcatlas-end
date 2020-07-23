@@ -11,17 +11,19 @@ public class EndPortalEffectsTask implements Runnable {
     private double y;
     private int lightningTimer;
 
+    private static final int LIGHTNING_TIME = 20 * 60 * 3;
+
     public EndPortalEffectsTask(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
         this.manager = endPlugin.getEndPortalManager();
         y = 128;
-        lightningTimer = 20 * 60 * 5;
+        lightningTimer = LIGHTNING_TIME;
     }
 
     @Override
     public void run() {
         if (!manager.portalActive()) {
-            lightningTimer = 20 * 60 * 5; // ensure lightning strikes the first time the portal opens
+            lightningTimer = LIGHTNING_TIME; // ensure lightning strikes the first time the portal opens
             return;
         }
 
@@ -35,7 +37,7 @@ public class EndPortalEffectsTask implements Runnable {
         double z = manager.getCurrent().getZ();
 
         lightningTimer++;
-        if (lightningTimer > 20 * 60 * 5) {
+        if (lightningTimer > LIGHTNING_TIME) {
             final int xLightning = (int) x;
             final int zLightning = (int) z;
             Bukkit.getScheduler().runTask(endPlugin, () -> {
