@@ -53,12 +53,23 @@ public class EndPortalListener implements Listener {
 
         Player player = event.getPlayer();
 
-        endPlugin.getEndPortalManager().teleportNearPortal(player);
+        if (player.getBedSpawnLocation() != null) {
+            player.teleport(player.getBedSpawnLocation());
+        } else {
+            World portalWorld = endPlugin.getEndPortalManager().getPortalWorld();
+
+            player.teleport(portalWorld.getSpawnLocation());
+        }
     }
 
     @EventHandler // prevent traps/griefing around the portal
     public void onBlockPlace(BlockPlaceEvent event) {
         Location location = event.getBlock().getLocation();
+
+        // Not in portal world
+        if (!location.getWorld().equals(endPlugin.getEndPortalManager().getPortalWorld())) {
+            return;
+        }
 
         if (endPlugin.getEndPortalManager().isInPortalArea(location)) {
             event.setCancelled(true);
@@ -70,6 +81,11 @@ public class EndPortalListener implements Listener {
     @EventHandler // prevent traps/griefing around the portal
     public void onBlockBreak(BlockBreakEvent event) {
         Location location = event.getBlock().getLocation();
+
+        // Not in portal world
+        if (!location.getWorld().equals(endPlugin.getEndPortalManager().getPortalWorld())) {
+            return;
+        }
 
         if (endPlugin.getEndPortalManager().isInPortalArea(location)) {
             event.setCancelled(true);

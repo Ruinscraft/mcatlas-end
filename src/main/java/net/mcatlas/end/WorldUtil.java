@@ -60,6 +60,11 @@ public final class WorldUtil {
         endSpawn.add(x, 0, z);
         endSpawn.setY(endSpawn.getWorld().getHighestBlockYAt(endSpawn));
 
+        if (endSpawn.getBlockY() > 70) {
+            // Too high, probably an end pillar
+            return findRandomEndSpawn(world);
+        }
+
         return endSpawn;
     }
 
