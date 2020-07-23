@@ -113,9 +113,13 @@ public class EndPortalCommand implements CommandExecutor {
     }
 
     private void teleportToPortal(Player player) {
-        endPlugin.getEndPortalManager().teleportNearPortal(player);
+        if (endPlugin.getEndPortalManager().portalActive()) {
+            endPlugin.getEndPortalManager().teleportNearPortal(player);
 
-        player.sendMessage(ChatColor.GOLD + "Teleported near the portal.");
+            player.sendMessage(ChatColor.GOLD + "Teleported near the portal.");
+        } else {
+            player.sendMessage(ChatColor.RED + "There isn't an active portal to teleport to.");
+        }
     }
 
     private void showValidArgs(CommandSender sender) {
