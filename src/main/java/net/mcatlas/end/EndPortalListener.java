@@ -1,5 +1,6 @@
 package net.mcatlas.end;
 
+import com.palmergames.bukkit.towny.event.PreNewTownEvent;
 import com.palmergames.bukkit.towny.event.TownPreClaimEvent;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.mcatlas.end.portal.EndPortal;
@@ -29,6 +30,34 @@ public class EndPortalListener implements Listener {
     }
 
     @EventHandler
+    public void onTownPreCreate(PreNewTownEvent event) {
+        if (!endPlugin.getEndPortalManager().portalActive()) {
+            return;
+        }
+
+        World portalWorld = endPlugin.getEndPortalManager().getPortalWorld();
+
+        // The town claim wasn't in the portal world
+        if (!portalWorld.equals(event.getPlayer().getWorld())) {
+            return;
+        }
+
+        Location playerLoc = event.getPlayer().getLocation();
+        Location portalLoc = endPlugin.getEndPortalManager().findPortalBukkitLocation().get();
+
+        Chunk playerChunk = playerLoc.getChunk();
+        Chunk portalChunk = portalLoc.getChunk();
+
+        double dist = WorldUtil.getDistanceBetweenChunks(playerChunk, portalChunk);
+
+        // Close than 2 chunks? Cancel
+        if (dist < 2) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot claim near an active portal.");
+        }
+    }
+
+    @EventHandler
     public void onTownPreClaim(TownPreClaimEvent event) {
         if (!endPlugin.getEndPortalManager().portalActive()) {
             return;
@@ -47,11 +76,7 @@ public class EndPortalListener implements Listener {
         Chunk townBlockChunk = portalWorld.getChunkAt(townBlock.getX(), townBlock.getZ());
         Chunk portalChunk = portalLoc.getChunk();
 
-        int x1 = townBlockChunk.getX();
-        int x2 = portalChunk.getX();
-        int z1 = townBlockChunk.getZ();
-        int z2 = portalChunk.getZ();
-        double dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((z1 - z2), 2));
+        double dist = WorldUtil.getDistanceBetweenChunks(townBlockChunk, portalChunk);
 
         // Close than 2 chunks? Cancel
         if (dist < 2) {

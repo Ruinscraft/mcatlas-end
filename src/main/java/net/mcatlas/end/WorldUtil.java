@@ -134,6 +134,16 @@ public final class WorldUtil {
                 .collect(Collectors.toSet());
     }
 
+    public static double getDistanceBetweenChunks(Chunk a, Chunk b) {
+        int x1 = a.getX();
+        int x2 = b.getX();
+        int z1 = a.getZ();
+        int z2 = b.getZ();
+        double dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((z1 - z2), 2));
+
+        return dist;
+    }
+
     private static boolean deleteDirectory(File directory) {
         if (directory.exists()) {
             File files[] = directory.listFiles();
