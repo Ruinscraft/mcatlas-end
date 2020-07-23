@@ -58,7 +58,9 @@ public class EndPortalListener implements Listener {
 
     @EventHandler // prevent traps/griefing around the portal
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (endPlugin.getEndPortalManager().isInPortalArea(event.getPlayer())) {
+        Location location = event.getBlock().getLocation();
+
+        if (endPlugin.getEndPortalManager().isInPortalArea(location)) {
             event.setCancelled(true);
 
             event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
@@ -67,7 +69,9 @@ public class EndPortalListener implements Listener {
 
     @EventHandler // prevent traps/griefing around the portal
     public void onBlockBreak(BlockBreakEvent event) {
-        if (endPlugin.getEndPortalManager().isInPortalArea(event.getPlayer())) {
+        Location location = event.getBlock().getLocation();
+
+        if (endPlugin.getEndPortalManager().isInPortalArea(location)) {
             event.setCancelled(true);
 
             event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");

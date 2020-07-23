@@ -3,6 +3,7 @@ package net.mcatlas.end.world;
 import net.mcatlas.end.EndPlugin;
 import net.mcatlas.end.WorldUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -59,7 +60,9 @@ public class EndWorld {
 
     public void teleportPlayer(Player player) {
         findBukkitWorld().ifPresent(world -> {
-            player.teleport(world.getSpawnLocation());
+            Location spawn = WorldUtil.findRandomEndSpawn(world);
+
+            player.teleport(spawn);
         });
     }
 

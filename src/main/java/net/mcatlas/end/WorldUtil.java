@@ -3,6 +3,8 @@ package net.mcatlas.end;
 import com.palmergames.bukkit.towny.TownyAPI;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -30,6 +32,14 @@ public final class WorldUtil {
         final double randomZ = ThreadLocalRandom.current().nextDouble(-zBound, zBound);
 
         Location location = new Location(world, randomX, 64D, randomZ);
+        Block block = location.getBlock();
+
+        if (block.getType().name().contains("LEAVES")
+                || block.getRelative(BlockFace.DOWN).getType().name().contains("LEAVES")) {
+            // the location was on top of a tree
+            return findUnclaimedLocation(world, xBound, zBound);
+        }
+        
         String townName = TownyAPI.getInstance().getTownName(location);
 
         // there was a town claim at the randomly chosen location
@@ -38,6 +48,20 @@ public final class WorldUtil {
         }
 
         return location;
+    }
+
+    public static Location findRandomEndSpawn(World world) {
+        Location endSpawn = world.getSpawnLocation().clone();
+
+        double angle = Math.random() * 360;
+        int rad = 40;
+        int x = (int) (Math.cos(angle) * rad);
+        int z = (int) (Math.sin(angle) * rad);
+
+        endSpawn.add(x, 0, z);
+        endSpawn.setY(endSpawn.getWorld().getHighestBlockYAt(endSpawn));
+
+        return endSpawn;
     }
 
     public static void createBukkitEndWorld(EndPlugin endPlugin, EndWorld endWorld) {
