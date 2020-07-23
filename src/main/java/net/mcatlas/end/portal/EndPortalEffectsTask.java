@@ -46,9 +46,10 @@ public class EndPortalEffectsTask implements Runnable {
             lightningTimer = 0;
         }
 
-        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 0, 0), 1);
+        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 0, 0), 3);
 
         world.spawnParticle(Particle.VILLAGER_ANGRY, x, y - .4, z, 1);
+        world.spawnParticle(Particle.EXPLOSION_NORMAL, x, y - .4, z, 1);
 
         x += 1.5;
         z += 1.5;
@@ -68,7 +69,13 @@ public class EndPortalEffectsTask implements Runnable {
                 z += .3;
                 yChange += .08;
             }
-            world.spawnParticle(Particle.REDSTONE, x, yChange, z, 0, 0, 0, 0, dust);
+            for (double separateY = y + 256; y > 0; y -= 30) {
+                if (y > 256) {
+                    continue;
+                }
+
+                world.spawnParticle(Particle.REDSTONE, x, separateY, z, 0, 0, 0, 0, dust);
+            }
         }
     }
 

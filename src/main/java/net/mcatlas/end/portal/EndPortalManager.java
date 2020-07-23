@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class EndPortalManager {
 
-    private static final int PORTAL_AREA_RAD = 36; // within 6 blocks
+    private static final int PORTAL_AREA_RAD = 9; // within 3 blocks
 
     private static long nextPortalTime;
 
