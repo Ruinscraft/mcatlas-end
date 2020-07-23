@@ -1,81 +1,85 @@
 package net.mcatlas.end.portal;
 
 import net.mcatlas.end.EndPlugin;
-import net.mcatlas.end.WorldUtil;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class EndPortalPlayerTask implements Runnable {
 
+    private static final long TIME_BEFORE_TELEPORT_MILLIS = TimeUnit.SECONDS.toMillis(10);
+    private static final Color COLOR_BLACK = Color.fromRGB(255, 255, 255);
+    private static final Color COLOR_PURPLE = Color.fromRGB(250, 250, 128);
+    private static final Particle.DustOptions PARTICLE_OPTIONS_BLACK = new Particle.DustOptions(COLOR_BLACK, 1);
+    private static final Particle.DustOptions PARTICLE_OPTIONS_PURPLE = new Particle.DustOptions(COLOR_PURPLE, 1);
+
+    private static final Random RANDOM = new Random();
+
     private EndPlugin endPlugin;
-    private EndPortalManager portalManager;
+    private Map<Player, Long> portalTeleportTimes;
 
-    private Map<Player, Long> playersInPortal;
-
-    public EndPortalPlayerTask() {
-        this.playersInPortal = new HashMap<>();
+    public EndPortalPlayerTask(EndPlugin endPlugin) {
+        this.endPlugin = endPlugin;
+        portalTeleportTimes = new HashMap<>();
     }
 
     @Override
     public void run() {
-        Set<Player> playersToRemove = new HashSet<>();
+        EndPortalManager endPortalManager = endPlugin.getEndPortalManager();
 
-        // add players to playersInPortal list if not there yet
-        for (Player player : portalManager.getPortalWorld().getPlayers()) {
-            if (portalManager.isInPortalArea(player)) {
-                if (!playersInPortal.containsKey(player)) {
-                    playersInPortal.put(player, System.currentTimeMillis() + (1000 * 8));
-                }
-            }
+        if (!endPortalManager.portalActive()) {
+            portalTeleportTimes.clear();
+            return;
         }
 
-        // cycle through players currently in portal
-        for (Map.Entry<Player, Long> entry : playersInPortal.entrySet()) {
-            Player player = entry.getKey();
-            if (!portalManager.isInPortalArea(player)) {
-                playersToRemove.add(player);
-                continue;
-            }
+        EndPortal endPortal = endPortalManager.getCurrent();
 
-            // in portal, not time to teleport yet
-            if (entry.getValue() > System.currentTimeMillis()) {
-                Location location = player.getLocation();
-                // do effects
-                player.playSound(location, Sound.AMBIENT_CAVE, SoundCategory.NEUTRAL, 10, 2);
-
-                for (int i = 0; i < 5; i++) {
-                    Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 0, 0), 1);
-
-                    if (WorldUtil.RANDOM.nextInt(5) == 1) {
-                        dust = new Particle.DustOptions(Color.fromRGB(250, 250, 128), 1);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (endPortalManager.isInPortalArea(player)) {
+                if (portalTeleportTimes.containsKey(player)) {
+                    if (portalTeleportTimes.get(player) < System.currentTimeMillis()) {
+                        // It's time to teleport
+                        endPortal.getEndWorld().teleportPlayer(player);
+                    } else {
+                        // It's not time to teleport
+                        playEffects(player);
                     }
-
-                    player.spawnParticle(Particle.REDSTONE,
-                            location.clone().add(
-                                    WorldUtil.RANDOM.nextDouble(), WorldUtil.RANDOM.nextDouble(), WorldUtil.RANDOM.nextDouble()
-                            ),
-                            0, 0, 0, 0, dust);
+                } else {
+                    portalTeleportTimes.put(player, System.currentTimeMillis() + TIME_BEFORE_TELEPORT_MILLIS);
                 }
+            } else {
+                if (portalTeleportTimes.containsKey(player)) {
+                    portalTeleportTimes.remove(player);
+                }
+            }
+        }
+    }
 
-                continue;
+    private void playEffects(Player player) {
+        Location origin = player.getLocation();
+
+        player.playSound(origin, Sound.AMBIENT_CAVE, SoundCategory.NEUTRAL, 10, 2);
+
+        for (int i = 0; i < 10; i++) {
+            Particle.DustOptions options;
+
+            if (RANDOM.nextInt(5) == 1) {
+                options = PARTICLE_OPTIONS_PURPLE;
+            } else {
+                options = PARTICLE_OPTIONS_BLACK;
             }
 
-            // teleport
-            portalManager.getCurrent().getEndWorld().teleportPlayer(player);
+            double xAdd = RANDOM.nextDouble();
+            double yAdd = RANDOM.nextDouble();
+            double zAdd = RANDOM.nextDouble();
 
-            player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
-                    "Once the portal closes, you will not be able to return to this End world!");
+            Location particleLocation = origin.clone().add(xAdd, yAdd, zAdd);
 
-            playersToRemove.add(player);
-        }
-
-        for (Player player : playersToRemove) {
-            playersInPortal.remove(player);
+            player.spawnParticle(Particle.REDSTONE, particleLocation, 1, options);
         }
     }
 

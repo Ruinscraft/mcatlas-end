@@ -52,14 +52,4 @@ public class EndPortal {
         endPlugin.getEndStorage().saveEndPortal(this);
     }
 
-    @Override
-    public String toString() {
-        return "EndPortal{" +
-                "endWorld=" + endWorld +
-                ", x=" + x +
-                ", z=" + z +
-                ", closeTime=" + closeTime +
-                '}';
-    }
-
 }

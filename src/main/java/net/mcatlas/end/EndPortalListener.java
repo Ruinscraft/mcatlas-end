@@ -1,7 +1,6 @@
 package net.mcatlas.end;
 
 import net.mcatlas.end.portal.EndPortal;
-import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -10,7 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -102,25 +100,6 @@ public class EndPortalListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-        }
-    }
-
-    @EventHandler
-    public void checkForEndPortal(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        EndPortalManager endPortalManager = endPlugin.getEndPortalManager();
-
-        // if not in the world where portals are active
-        if (!player.getWorld().equals(endPortalManager.getPortalWorld())) {
-            return;
-        }
-
-        if (endPortalManager.isInPortalArea(player)) {
-            EndPortal endPortal = endPortalManager.getCurrent();
-
-            endPortal.getEndWorld().findBukkitWorld().ifPresent(endBukkitWorld -> {
-                player.teleport(endBukkitWorld.getSpawnLocation());
-            });
         }
     }
 

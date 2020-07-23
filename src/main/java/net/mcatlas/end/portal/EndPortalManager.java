@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class EndPortalManager {
 
-    private static final int PORTAL_AREA_RAD = 9; // within 3 blocks
+    private static final int PORTAL_AREA_RAD = 30;
 
     private static long nextPortalTime;
 
@@ -130,6 +130,10 @@ public class EndPortalManager {
     }
 
     public boolean isInPortalArea(Player player) {
+        if (!player.getWorld().equals(portalWorld)) {
+            return false;
+        }
+
         return isInPortalArea(player.getLocation());
     }
 

@@ -2,9 +2,11 @@ package net.mcatlas.end;
 
 import net.mcatlas.end.portal.EndPortalEffectsTask;
 import net.mcatlas.end.portal.EndPortalManager;
+import net.mcatlas.end.portal.EndPortalPlayerTask;
 import net.mcatlas.end.storage.EndStorage;
 import net.mcatlas.end.storage.MySQLEndStorage;
 import net.mcatlas.end.world.EndWorld;
+import net.mcatlas.end.world.EndWorldCheckerTask;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +21,7 @@ public class EndPlugin extends JavaPlugin {
     private EndPortalManager endPortalManager;
     private EndWorldCheckerTask endWorldCheckerTask;
     private EndPortalEffectsTask endPortalEffectsTask;
+    private EndPortalPlayerTask endPortalPlayerTask;
 
     @Override
     public void onEnable() {
@@ -28,6 +31,7 @@ public class EndPlugin extends JavaPlugin {
         setupEndPortalManager();
         setupEndWorldCheckerTask();
         setupEndPortalEffectsTask();
+        setupEndPortalPlayerTask();
 
         // Register listeners
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
@@ -74,6 +78,10 @@ public class EndPlugin extends JavaPlugin {
         return endPortalEffectsTask;
     }
 
+    public EndPortalPlayerTask getEndPortalPlayerTask() {
+        return endPortalPlayerTask;
+    }
+
     private void setupEndStorage() {
         String host = getConfig().getString("storage.mysql.host");
         int port = getConfig().getInt("storage.mysql.port");
@@ -114,9 +122,17 @@ public class EndPlugin extends JavaPlugin {
     private void setupEndPortalEffectsTask() {
         endPortalEffectsTask = new EndPortalEffectsTask(this);
 
-        long periodTicks = 1;
+        long periodTicks = 20; // once a second-ish
 
-        getServer().getScheduler().runTaskTimerAsynchronously(this, endPortalEffectsTask, 0, periodTicks);
+        getServer().getScheduler().runTaskTimer(this, endPortalEffectsTask, 0, periodTicks);
+    }
+
+    private void setupEndPortalPlayerTask() {
+        endPortalPlayerTask = new EndPortalPlayerTask(this);
+
+        long periodTicks = 10; // twice a second-ish
+
+        getServer().getScheduler().runTaskTimer(this, endPortalPlayerTask, 0, periodTicks);
     }
 
 }
