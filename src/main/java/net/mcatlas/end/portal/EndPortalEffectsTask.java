@@ -16,7 +16,6 @@ public class EndPortalEffectsTask implements Runnable {
     private static final Particle.DustOptions PARTICLE_OPTIONS_BLACK = new Particle.DustOptions(Color.BLACK, 3);
     private static final Particle.DustOptions PARTICLE_OPTIONS_PURPLE = new Particle.DustOptions(Color.PURPLE, 3);
 
-
     private EndPlugin endPlugin;
     private long nextLightningTime;
 

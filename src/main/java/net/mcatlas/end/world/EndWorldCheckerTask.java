@@ -5,7 +5,6 @@ import net.mcatlas.end.EndPlugin;
 import net.mcatlas.end.WorldUtil;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.storage.EndStorage;
-import net.mcatlas.end.world.EndWorld;
 
 import java.util.List;
 
