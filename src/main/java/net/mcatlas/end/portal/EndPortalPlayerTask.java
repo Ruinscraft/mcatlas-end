@@ -43,7 +43,7 @@ public class EndPortalPlayerTask implements Runnable {
                 if (portalTeleportTimes.containsKey(player)) {
                     if (portalTeleportTimes.get(player) < System.currentTimeMillis()) {
                         // It's time to teleport
-                        endPortal.getEndWorld().teleportPlayer(player);
+                        teleport(player, endPortal);
                     } else {
                         // It's not time to teleport
                         playEffects(player);
@@ -81,6 +81,13 @@ public class EndPortalPlayerTask implements Runnable {
 
             player.spawnParticle(Particle.REDSTONE, particleLocation, 1, options);
         }
+    }
+
+    private void teleport(Player player, EndPortal endPortal) {
+        endPortal.getEndWorld().teleportPlayer(player);
+
+        player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
+                "Once the portal closes, you will not be able to return to this End world! Stay as long as you like.");
     }
 
 }

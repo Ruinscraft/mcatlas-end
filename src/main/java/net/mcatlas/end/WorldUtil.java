@@ -28,26 +28,25 @@ public final class WorldUtil {
     }
 
     public static Location findUnclaimedLocation(World world, int xBound, int zBound) {
-        final double randomX = ThreadLocalRandom.current().nextDouble(-xBound, xBound);
-        final double randomZ = ThreadLocalRandom.current().nextDouble(-zBound, zBound);
+        final int randomX = (int) ThreadLocalRandom.current().nextDouble(-xBound, xBound);
+        final int randomZ = (int) ThreadLocalRandom.current().nextDouble(-zBound, zBound);
 
-        Location location = new Location(world, randomX, 64D, randomZ);
-        Block block = location.getBlock();
+        Block block = world.getHighestBlockAt(randomX, randomZ);
 
         if (block.getType().name().contains("LEAVES")
                 || block.getRelative(BlockFace.DOWN).getType().name().contains("LEAVES")) {
             // the location was on top of a tree
             return findUnclaimedLocation(world, xBound, zBound);
         }
-        
-        String townName = TownyAPI.getInstance().getTownName(location);
+
+        String townName = TownyAPI.getInstance().getTownName(block.getLocation());
 
         // there was a town claim at the randomly chosen location
         if (townName != null) {
             return findUnclaimedLocation(world, xBound, zBound);
         }
 
-        return location;
+        return block.getLocation();
     }
 
     public static Location findRandomEndSpawn(World world) {
