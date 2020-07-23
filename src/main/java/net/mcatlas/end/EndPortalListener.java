@@ -1,8 +1,11 @@
 package net.mcatlas.end;
 
+import com.palmergames.bukkit.towny.event.TownPreClaimEvent;
+import com.palmergames.bukkit.towny.object.TownBlock;
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.world.EndWorld;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderSignal;
@@ -23,6 +26,38 @@ public class EndPortalListener implements Listener {
 
     public EndPortalListener(EndPlugin endPlugin) {
         this.endPlugin = endPlugin;
+    }
+
+    @EventHandler
+    public void onTownPreClaim(TownPreClaimEvent event) {
+        if (!endPlugin.getEndPortalManager().portalActive()) {
+            return;
+        }
+
+        World portalWorld = endPlugin.getEndPortalManager().getPortalWorld();
+        TownBlock townBlock = event.getTownBlock();
+
+        // The town claim wasn't in the portal world
+        if (!portalWorld.getName().equals(townBlock.getWorld().getName())) {
+            return;
+        }
+
+        Location portalLoc = endPlugin.getEndPortalManager().findPortalBukkitLocation().get();
+
+        Chunk townBlockChunk = portalWorld.getChunkAt(townBlock.getX(), townBlock.getZ());
+        Chunk portalChunk = portalLoc.getChunk();
+
+        int x1 = townBlockChunk.getX();
+        int x2 = portalChunk.getX();
+        int z1 = townBlockChunk.getZ();
+        int z2 = portalChunk.getZ();
+        double dist = Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((z1 - z2), 2));
+
+        // Close than 2 chunks? Cancel
+        if (dist < 2) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot claim near an active portal.");
+        }
     }
 
     @EventHandler

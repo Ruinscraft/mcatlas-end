@@ -33,7 +33,7 @@
             <artifactId>Towny</artifactId>
             <version>unknown</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/Towny.jar</systemPath>
+            <systemPath>${basedir}/lib/Towny-0.96.2.0-for-1.13.2.jar</systemPath>
         </dependency>
     </dependencies>
 
