@@ -6,5 +6,8 @@ authors: [StupidDrew9, royalkingkb]
 depend: [Towny]
 commands:
   endportal:
-    permission: Manage End Portals
-    description: mcatlas.command.endportal
+    permission: mcatlas.command.endportal
+    description: View or manage an End Portal
+  endworlds:
+    permission: mcatlas.command.endworlds
+    description: View currently active End Worlds
