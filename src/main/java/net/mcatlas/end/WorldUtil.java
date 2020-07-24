@@ -39,6 +39,10 @@ public final class WorldUtil {
             return findUnclaimedLocation(world, xBound, zBound);
         }
 
+        if (block.getBiome().name().contains("OCEAN")) {
+            return findUnclaimedLocation(world, xBound, zBound);
+        }
+
         String townName = TownyAPI.getInstance().getTownName(block.getLocation());
 
         // there was a town claim at the randomly chosen location
