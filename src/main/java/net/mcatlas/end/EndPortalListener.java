@@ -101,12 +101,11 @@ public class EndPortalListener implements Listener {
         ItemStack handStack = player.getInventory().getItemInMainHand();
 
         if (handStack != null && handStack.getType() == Material.ENDER_EYE) {
-            if (handStack.getAmount() > 1) {
-                handStack.setAmount(handStack.getAmount() - 1);
+            event.setCancelled(true);
 
-                player.getInventory().setItemInMainHand(handStack);
-            }
+            handStack.setAmount(handStack.getAmount() - 1);
 
+            player.getInventory().setItemInMainHand(handStack);
             player.getWorld().spawnEntity(player.getEyeLocation(), EntityType.ENDER_SIGNAL);
         }
     }
