@@ -5,21 +5,21 @@ import com.palmergames.bukkit.towny.event.TownPreClaimEvent;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.mcatlas.end.portal.EndPortal;
 import net.mcatlas.end.world.EndWorld;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.EnderSignal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class EndPortalListener implements Listener {
 
@@ -82,6 +82,29 @@ public class EndPortalListener implements Listener {
         if (dist < 2) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "You cannot claim near an active portal.");
+        }
+    }
+
+    @EventHandler
+    public void playerInteractEnderEye(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+
+        // If not in portal world
+        if (!endPlugin.getEndPortalManager().getPortalWorld().equals(player.getWorld())) {
+            return;
+        }
+
+        ItemStack handStack = player.getInventory().getItemInMainHand();
+
+        if (handStack != null && handStack.getType() == Material.ENDER_EYE) {
+            handStack.setAmount(handStack.getAmount() - 1);
+
+            player.getInventory().setItemInMainHand(handStack);
+            player.getWorld().spawnEntity(player.getEyeLocation(), EntityType.ENDER_SIGNAL);
         }
     }
 
