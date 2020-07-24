@@ -79,6 +79,9 @@ public final class WorldUtil {
 
             World world = worldCreator.createWorld();
 
+            // Disable advancement announcements in end worlds
+            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+
             endPlugin.getServer().getWorlds().add(world);
             endPlugin.getLogger().info("Loaded world: " + world.getName());
         });
