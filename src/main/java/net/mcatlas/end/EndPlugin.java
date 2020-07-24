@@ -38,6 +38,7 @@ public class EndPlugin extends JavaPlugin {
 
         // Register commands
         getCommand("endportal").setExecutor(new EndPortalCommand(this));
+        getCommand("endworlds").setExecutor(new EndWorldsCommand());
     }
 
     @Override
