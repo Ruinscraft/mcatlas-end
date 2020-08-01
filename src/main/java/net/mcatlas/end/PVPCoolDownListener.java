@@ -24,9 +24,9 @@ public class PVPCoolDownListener implements Listener {
     public void onEndPortalTeleport(EndPortalTeleportEvent event) {
         Player player = event.getPlayer();
 
-        long delayTicks = 20 * 15L;
+        long delayTicks = 20 * 30L;
 
-        player.sendMessage(ChatColor.GOLD + "You have a 15 second PVP grace period (in the End).");
+        player.sendMessage(ChatColor.GOLD + "You have a 30 second PVP grace period (in the End).");
 
         onGrace.add(player);
 

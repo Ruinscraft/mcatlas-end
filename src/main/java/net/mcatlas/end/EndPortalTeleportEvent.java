@@ -25,4 +25,8 @@ public class EndPortalTeleportEvent extends PlayerEvent {
         return handlers;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
 }

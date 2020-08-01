@@ -1,6 +1,9 @@
 package net.mcatlas.end;
 
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -77,13 +80,11 @@ public class EndWorldListener implements Listener {
             return;
         }
 
-        Chunk spawnChunk = world.getChunkAt(0, 0);
-        Chunk chunk = block.getChunk();
+        Location blockLocation = block.getLocation();
 
-        double dist = WorldUtil.getDistanceBetweenChunks(spawnChunk, chunk);
+        double dist = Math.sqrt(Math.pow((0 - blockLocation.getBlockX()), 2) + Math.pow((0 - blockLocation.getBlockZ()), 2));
 
-        // Cannot build closer than 3 chunks to portal
-        if (dist < 3) {
+        if (dist < 16) {
             for (Material allowed : ALLOWED_NEAR_END_SPAWN) {
                 if (block.getType() == allowed) {
                     return;
@@ -105,13 +106,11 @@ public class EndWorldListener implements Listener {
             return;
         }
 
-        Chunk spawnChunk = world.getChunkAt(0, 0);
-        Chunk chunk = block.getChunk();
+        Location blockLocation = block.getLocation();
 
-        double dist = WorldUtil.getDistanceBetweenChunks(spawnChunk, chunk);
+        double dist = Math.sqrt(Math.pow((0 - blockLocation.getBlockX()), 2) + Math.pow((0 - blockLocation.getBlockZ()), 2));
 
-        // Cannot build closer than 3 chunks to portal
-        if (dist < 3) {
+        if (dist < 16) {
             for (Material allowed : ALLOWED_NEAR_END_SPAWN) {
                 if (block.getType() == allowed) {
                     return;
