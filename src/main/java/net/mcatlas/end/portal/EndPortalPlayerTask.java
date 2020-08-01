@@ -1,6 +1,7 @@
 package net.mcatlas.end.portal;
 
 import net.mcatlas.end.EndPlugin;
+import net.mcatlas.end.EndPortalTeleportEvent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -88,6 +89,10 @@ public class EndPortalPlayerTask implements Runnable {
 
         player.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Hey! " + ChatColor.RESET +
                 "Once the portal closes, you will not be able to return to this End world! Stay as long as you like.");
+
+        EndPortalTeleportEvent event = new EndPortalTeleportEvent(player, endPortal);
+
+        endPlugin.getServer().getPluginManager().callEvent(event);
     }
 
 }

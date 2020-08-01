@@ -7,7 +7,6 @@ import net.mcatlas.end.storage.EndStorage;
 import net.mcatlas.end.storage.MySQLEndStorage;
 import net.mcatlas.end.world.EndWorld;
 import net.mcatlas.end.world.EndWorldCheckerTask;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,6 +36,7 @@ public class EndPlugin extends JavaPlugin {
         // Register listeners
         getServer().getPluginManager().registerEvents(new EndPortalListener(this), this);
         getServer().getPluginManager().registerEvents(new EndWorldListener(this), this);
+        getServer().getPluginManager().registerEvents(new PVPCoolDownListener(this), this);
 
         // Register commands
         getCommand("endportal").setExecutor(new EndPortalCommand(this));
