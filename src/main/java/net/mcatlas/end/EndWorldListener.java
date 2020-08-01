@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.ArrayList;
@@ -100,6 +101,32 @@ public class EndWorldListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
+        World world = block.getWorld();
+
+        if (world.getEnvironment() != World.Environment.THE_END) {
+            return;
+        }
+
+        Location blockLocation = block.getLocation();
+
+        double dist = Math.sqrt(Math.pow((0 - blockLocation.getBlockX()), 2) + Math.pow((0 - blockLocation.getBlockZ()), 2));
+
+        if (dist < 16) {
+            for (Material allowed : ALLOWED_NEAR_END_SPAWN) {
+                if (block.getType() == allowed) {
+                    return;
+                }
+            }
+
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
+
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBucketUse(PlayerBucketEmptyEvent event) {
+        Block block = event.getBlockClicked();
         World world = block.getWorld();
 
         if (world.getEnvironment() != World.Environment.THE_END) {
