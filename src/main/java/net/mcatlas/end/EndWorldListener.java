@@ -1,11 +1,16 @@
 package net.mcatlas.end;
 
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EndWorldListener implements Listener {
 
@@ -47,6 +52,76 @@ public class EndWorldListener implements Listener {
         }
 
         player.teleport(new Location(overworld, x, 400, z));
+    }
+
+    private final List<Material> ALLOWED_NEAR_END_SPAWN;
+
+    {
+        ALLOWED_NEAR_END_SPAWN = new ArrayList<>();
+
+        ALLOWED_NEAR_END_SPAWN.add(Material.SIGN);
+        ALLOWED_NEAR_END_SPAWN.add(Material.WALL_SIGN);
+        ALLOWED_NEAR_END_SPAWN.add(Material.TORCH);
+        ALLOWED_NEAR_END_SPAWN.add(Material.WALL_TORCH);
+        ALLOWED_NEAR_END_SPAWN.add(Material.DRAGON_EGG);
+        ALLOWED_NEAR_END_SPAWN.add(Material.DRAGON_HEAD);
+        ALLOWED_NEAR_END_SPAWN.add(Material.DRAGON_WALL_HEAD);
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Block block = event.getBlock();
+        World world = block.getWorld();
+
+        if (world.getEnvironment() != World.Environment.THE_END) {
+            return;
+        }
+
+        Chunk spawnChunk = world.getChunkAt(0, 0);
+        Chunk chunk = block.getChunk();
+
+        double dist = WorldUtil.getDistanceBetweenChunks(spawnChunk, chunk);
+
+        // Cannot build closer than 3 chunks to portal
+        if (dist < 3) {
+            for (Material allowed : ALLOWED_NEAR_END_SPAWN) {
+                if (block.getType() == allowed) {
+                    return;
+                }
+            }
+
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
+
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        World world = block.getWorld();
+
+        if (world.getEnvironment() != World.Environment.THE_END) {
+            return;
+        }
+
+        Chunk spawnChunk = world.getChunkAt(0, 0);
+        Chunk chunk = block.getChunk();
+
+        double dist = WorldUtil.getDistanceBetweenChunks(spawnChunk, chunk);
+
+        // Cannot build closer than 3 chunks to portal
+        if (dist < 3) {
+            for (Material allowed : ALLOWED_NEAR_END_SPAWN) {
+                if (block.getType() == allowed) {
+                    return;
+                }
+            }
+
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot build near the portal.");
+
+            event.setCancelled(true);
+        }
     }
 
 }
