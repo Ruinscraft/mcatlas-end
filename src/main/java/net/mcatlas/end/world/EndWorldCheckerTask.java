@@ -1,10 +1,11 @@
 package net.mcatlas.end.world;
 
-import net.mcatlas.end.Announcements;
 import net.mcatlas.end.EndPlugin;
 import net.mcatlas.end.WorldUtil;
 import net.mcatlas.end.portal.EndPortalManager;
 import net.mcatlas.end.storage.EndStorage;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -27,11 +28,11 @@ public class EndWorldCheckerTask implements Runnable {
          *  Check portal states to announce a close/open
          */
         if (portalActive && !portalWasActive) {
-            Announcements.announcePortalOpen();
+            announcePortalOpen();
         }
 
         else if (!portalActive && portalWasActive) {
-            Announcements.announcePortalClose();
+            announcePortalClose();
         }
 
         /*
@@ -93,6 +94,22 @@ public class EndWorldCheckerTask implements Runnable {
 
         // Delete the assoc Bukkit world
         WorldUtil.deleteBukkitEndWorld(endPlugin, endWorld);
+    }
+
+    private void announcePortalOpen() {
+        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+           for (Player player : endPlugin.getServer().getOnlinePlayers()) {
+               player.sendMessage(ChatColor.BLACK + "A portal to a new dimension has opened.");
+           }
+        });
+    }
+
+    private void announcePortalClose() {
+        endPlugin.getServer().getScheduler().runTask(endPlugin, () -> {
+            for (Player player : endPlugin.getServer().getOnlinePlayers()) {
+                player.sendMessage(ChatColor.BLACK + "The portal to a different dimension has shut.");
+            }
+        });
     }
 
 }

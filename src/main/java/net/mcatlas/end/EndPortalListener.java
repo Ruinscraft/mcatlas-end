@@ -107,6 +107,7 @@ public class EndPortalListener implements Listener {
 
             player.getInventory().setItemInMainHand(handStack);
             player.getWorld().spawnEntity(player.getEyeLocation(), EntityType.ENDER_SIGNAL);
+            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_EYE_LAUNCH, SoundCategory.NEUTRAL, 1, 1);
         }
     }
 
