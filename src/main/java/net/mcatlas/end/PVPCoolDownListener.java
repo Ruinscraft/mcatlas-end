@@ -54,6 +54,10 @@ public class PVPCoolDownListener implements Listener {
                 damager.sendMessage(ChatColor.RED + damaged.getName() + " is protected by their grace period.");
 
                 event.setCancelled(true);
+            } else if (onGrace.contains(damager)) {
+                damager.sendMessage(ChatColor.RED + "You are on a grace period. You cannot PVP.");
+
+                event.setCancelled(true);
             }
         }
 
