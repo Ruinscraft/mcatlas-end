@@ -22,6 +22,14 @@ public class EndWorldCheckerTask implements Runnable {
     public void run() {
         EndStorage storage = endPlugin.getEndStorage();
 
+        /*
+         *  Check if a new End Portal should be created
+         */
+        if (EndPortalManager.generateNewPortal()) {
+            endPlugin.getEndPortalManager().createRandom(endPlugin);
+            endPlugin.getLogger().info("A new End Portal has been created.");
+        }
+
         boolean portalActive = endPlugin.getEndPortalManager().portalActive();
 
         /*
@@ -33,14 +41,6 @@ public class EndWorldCheckerTask implements Runnable {
 
         else if (!portalActive && portalWasActive) {
             announcePortalClose();
-        }
-
-        /*
-         *  Check if a new End Portal should be created
-         */
-        if (EndPortalManager.generateNewPortal()) {
-            endPlugin.getEndPortalManager().createRandom(endPlugin);
-            endPlugin.getLogger().info("A new End Portal has been created.");
         }
 
         List<String> endWorldDirs = WorldUtil.getEndWorldDirectories();
@@ -73,7 +73,6 @@ public class EndWorldCheckerTask implements Runnable {
 
             if (activePlayerCount == 0) {
                 deleteEndWorld(undeleted); // There were no active players
-                continue;
             }
         }
 
